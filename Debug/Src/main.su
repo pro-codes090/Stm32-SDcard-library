@@ -4,7 +4,7 @@ main.c:72:6:deselectSDcard	8	static
 main.c:73:6:selectSDcard	8	static
 main.c:75:6:sdPowerUp	16	static
 main.c:119:6:sdInitSeq	16	static
-main.c:166:6:readOCR	32	static
-main.c:189:6:sd_final_Init	24	static
-main.c:233:6:readBlockSingle	56	static
-main.c:286:5:main	8	static
+main.c:166:6:readOCR	16	static
+main.c:213:6:sd_final_Init	24	static
+main.c:257:6:readBlockSingle	56	static
+main.c:309:5:main	8	static

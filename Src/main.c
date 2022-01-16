@@ -164,7 +164,7 @@ void sdInitSeq(){
 }
 
 void readOCR() {
-uint8_t R3_Response [5] = {0xff ,0xff ,0xff ,0xff ,0xff } ;
+uint8_t res3 ;
 	printf("CMD58 \n ") ;
 	Data[0] = 0x7A ;
 	Data[1] = 0x00 ;
@@ -173,17 +173,40 @@ uint8_t R3_Response [5] = {0xff ,0xff ,0xff ,0xff ,0xff } ;
 	Data[4] = 0x00 ;
 	Data[5] = (0x00 | 0x01) ;
 
-	SPI_Send(SPI2, Data, 6) ;
 	SPI_Send(SPI2, &dummyByte, 1) ;
-	SPI_Read(SPI2, &dummyReadByte, 1) ;
-	for (uint8_t i = 0; i < 5; i++) {
-	SPI_Send(SPI2, &R3_Response[i] , 1 );
-	SPI_Read(SPI2, &R3_Response[i] , 1);
-	}
+	// delay some time
+	for (uint16_t i = 0;  i < 1000; i++) {}
+	selectSDcard() ;
+	SPI_Send(SPI2, &dummyByte, 1) ;
+	SPI_Send(SPI2, Data, 6) ;
 
-	printf("%d %d %d %d %d \n" , R3_Response[0]
-		, R3_Response[1] , R3_Response[2] ,
-		  R3_Response[3], R3_Response[4]  ) ;
+	SPI_Send(SPI2, &dummyByte, 1) ;
+	SPI_Read(SPI2, &res3, 1) ;
+	printf("1 %p \n" , res3) ;
+	SPI_Send(SPI2, &dummyByte, 1) ;
+	SPI_Read(SPI2, &res3, 1) ;
+	printf("2 %p \n" , res3) ;
+	SPI_Send(SPI2, &dummyByte, 1) ;
+	SPI_Read(SPI2, &res3, 1) ;
+	printf("3 %p \n" , res3) ;
+	SPI_Send(SPI2, &dummyByte, 1) ;
+	SPI_Read(SPI2, &res3, 1) ;
+	printf("4 %p \n" , res3) ;
+	SPI_Send(SPI2, &dummyByte, 1) ;
+	SPI_Read(SPI2, &res3, 1) ;
+	printf("5 %p \n" , res3) ;
+	SPI_Send(SPI2, &dummyByte, 1) ;
+	SPI_Read(SPI2, &res3, 1) ;
+	printf("6 %p \n" , res3) ;
+	SPI_Send(SPI2, &dummyByte, 1) ;
+	SPI_Read(SPI2, &res3, 1) ;
+	printf("7 %p \n" , res3) ;
+
+	// delay some time
+	for (uint16_t i = 0;  i < 1000; i++) {}
+	deselectSDcard();
+	SPI_Send(SPI2, &dummyByte, 1) ;
+
 }
 
 void sd_final_Init(uint8_t cardType){
