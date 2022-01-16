@@ -12,13 +12,13 @@
 #include "stm32f407xx_gpio_driver.h"
 #include "stm32f407xx_spi_driver.h"
 
+uint8_t res7 = 0 ;
 uint8_t Data [] = {0xff ,0xff ,0xff ,0xff ,0xff ,0xff ,0xff ,0xff ,0xff ,0xff ,} ;
 uint8_t dummyByte = 0xff ;
 uint8_t dummyReadByte = 0xff ;
 void SPI2_GPIOInits(void)
 {
 	GPIO_Handle_t SPIPins;
-
 
 	SPIPins.pGPIOx = GPIOB;
 	SPIPins.GPIO_PinConfig.GPIO_PinMode = GPIO_MODE_ALTFN;
@@ -60,7 +60,7 @@ void SPI2_Inits(void)
 	SPI2handle.pSPIx = SPI2;
 	SPI2handle.SPIConfig.SPI_BusConfig = SPI_BUS_CONFIG_FD;
 	SPI2handle.SPIConfig.SPI_DeviceMode = SPI_DEVICE_MODE_MASTER;
-	SPI2handle.SPIConfig.SPI_SclkSpeed = SPI_SCLK_SPEED_DIV4;//generates sclk of 8MHz
+	SPI2handle.SPIConfig.SPI_SclkSpeed = SPI_SCLK_SPEED_DIV32;//generates sclk of 8MHz
 	SPI2handle.SPIConfig.SPI_DFF = SPI_DFF_8BITS;
 	SPI2handle.SPIConfig.SPI_CPOL = SPI_CPOL_LOW;
 	SPI2handle.SPIConfig.SPI_CPHA = SPI_CPHA_LOW;
@@ -69,33 +69,34 @@ void SPI2_Inits(void)
 	SPI_Init(&SPI2handle);
 }
 
-void deselectSDcard(){
-	GPIO_WriteToOutputPin(GPIOB, GPIO_PIN_NO_10, SET);
-
-}
-
-void selectSDcard(){
-	GPIO_WriteToOutputPin(GPIOB, GPIO_PIN_NO_10, RESET);
-
-}
+void deselectSDcard(){GPIO_WriteToOutputPin(GPIOB, GPIO_PIN_NO_10, SET);}
+void selectSDcard(){GPIO_WriteToOutputPin(GPIOB, GPIO_PIN_NO_10, RESET);}
 
 void sdPowerUp(){
+	deselectSDcard();
+
+	// delay some time
+	for (uint16_t i = 0;  i < 1000; i++) {}
 	// sending 80 clock cycles
 	uint8_t R1_Response = 0x0f; // store the R1 response for CMD 0
 	SPI_Send(SPI2, Data, 10) ;
 
-	// delay some time
-//	for (uint16_t i = 0;  i < 1000; i++) {}
-
+	deselectSDcard();
+	SPI_Send(SPI2, &dummyByte, 1) ;
 	// send CMD0 with CRC
 	Data[0] = 0x40 ;
-	Data[1] = 0x00;
+	Data[1] = 0x00 ;
 	Data[2] = 0x00 ;
 	Data[3] = 0x00 ;
 	Data[4] = 0x00 ;
 	Data[5] = 0x95 ;
-	// select the card
-	selectSDcard();
+
+		SPI_Send(SPI2, &dummyByte, 1) ;
+		// delay some time
+		for (uint16_t i = 0;  i < 1000; i++) {}
+		selectSDcard() ;
+		SPI_Send(SPI2, &dummyByte, 1) ;
+
 	// send CMD0 wait for 1 byte R1 response
 	SPI_Send(SPI2, Data, 6) ;
 	// send some clock to get the R1 response towards master
@@ -105,12 +106,18 @@ void sdPowerUp(){
 	SPI_Read(SPI2, &R1_Response, 1) ;
 	printf("%d\n" , R1_Response) ;
 	}
+
+	SPI_Send(SPI2, &dummyByte, 1) ;
+	// delay some time
+	for (uint16_t i = 0;  i < 1000; i++) {}
+	deselectSDcard();
+	SPI_Send(SPI2, &dummyByte, 1) ;
 		printf("CMD0 r1 ideal \n") ;
 
 }
 
 void sdInitSeq(){
-uint8_t R7_Response [5] ={0xff , 0xff, 0xff, 0xff, 0xff};
+
 	printf("CMD8 \n ") ;
 	Data[0] = 0x48 ;
 	Data[1] = 0x00 ;
@@ -119,17 +126,41 @@ uint8_t R7_Response [5] ={0xff , 0xff, 0xff, 0xff, 0xff};
 	Data[4] = 0xAA ;
 	Data[5] = (0x86 | 0x01) ;
 
-	SPI_Send(SPI2, Data, 6);
 	SPI_Send(SPI2, &dummyByte, 1) ;
-	SPI_Read(SPI2, &dummyReadByte, 1);
-	for (uint8_t i = 0; i < 5; i++) {
-	SPI_Send(SPI2, &R7_Response[i],1 );
-	SPI_Read(SPI2, &R7_Response[i], 1);
-	}
+	// delay some time
+	for (uint16_t i = 0;  i < 1000; i++) {}
+	selectSDcard() ;
+	SPI_Send(SPI2, &dummyByte, 1) ;
 
-	printf("%d %d %d %d %d \n" , R7_Response[0]
-		, R7_Response[1] , R7_Response[2] ,
-		  R7_Response[3], R7_Response[4]  ) ;
+	SPI_Send(SPI2, Data, 6);
+
+	SPI_Send(SPI2, &dummyByte, 1) ;
+	SPI_Read(SPI2, &res7, 1) ;
+	printf("1 %p \n" , res7) ;
+	SPI_Send(SPI2, &dummyByte, 1) ;
+	SPI_Read(SPI2, &res7, 1) ;
+	printf("2 %p \n" , res7) ;
+	SPI_Send(SPI2, &dummyByte, 1) ;
+	SPI_Read(SPI2, &res7, 1) ;
+	printf("3 %p \n" , res7) ;
+	SPI_Send(SPI2, &dummyByte, 1) ;
+	SPI_Read(SPI2, &res7, 1) ;
+	printf("4 %p \n" , res7) ;
+	SPI_Send(SPI2, &dummyByte, 1) ;
+	SPI_Read(SPI2, &res7, 1) ;
+	printf("5 %p \n" , res7) ;
+	SPI_Send(SPI2, &dummyByte, 1) ;
+	SPI_Read(SPI2, &res7, 1) ;
+	printf("6 %p \n" , res7) ;
+	SPI_Send(SPI2, &dummyByte, 1) ;
+	SPI_Read(SPI2, &res7, 1) ;
+	printf("7 %p \n" , res7) ;
+
+	// delay some time
+	for (uint16_t i = 0;  i < 1000; i++) {}
+	deselectSDcard();
+	SPI_Send(SPI2, &dummyByte, 1) ;
+
 }
 
 void readOCR() {
@@ -242,7 +273,7 @@ uint8_t R1_Response = 0xff ;
 			for (uint16_t i = 0;  i < 515; i++) {
 		SPI_Send(SPI2, &dummyByte, 1) ;
 		SPI_Read(SPI2, &dummyReadByte, 1) ; // dummy read
-		printf("%p", dummyReadByte) ;		// @needs to change
+		printf("%p ", dummyReadByte) ;		// @needs to change
 		if (i >= 514 ) {
 			return ;
 		}
@@ -251,33 +282,11 @@ uint8_t R1_Response = 0xff ;
 	}
 }
 
-
-void writeBlockSingle(){
-	printf("CMD24\n") ;
-
-}
-
-void readBlockMultiple(uint32_t blockIndex ){
-	printf("CMD18\n") ;
-
-}
-
-
-void writeBlockMultiple(){
-	printf("CMD25\n") ;
-
-}
-
-void stopTransfer(){
-	printf("CMD12 \n") ;
-
-}
-
 int main (void ){
 	printf("application running \n") ;
 
 	SPI2_GPIOInits(); 	// setup the gpio pins for spi communication
-	deselectSDcard();   // pull the pin high basically deselect the card
+	deselectSDcard();
 	SPI2_Inits();		// spi2 initialization like sclk speed and cpol and cpha
 	//spi ssi config
 	SPI_SSIConfig(SPI2, ENABLE) ;	// mandate for software slave management
@@ -315,5 +324,4 @@ int main (void ){
 
 	return 0;
 }
-
 
