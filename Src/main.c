@@ -300,7 +300,7 @@ SPI_Send(SPI2, &dummyByte, 1) ;
 printf("Init Success \n ") ;
 }
 
-void readBlockSingle(uint32_t blockIndex ){
+void prepReadWrite(){
 	SPI_PeripheralControl(SPI2, DISABLE) ;
 	SPI_Handle_t SPI2handle;
 	SPI2handle.pSPIx = SPI2;
@@ -318,6 +318,9 @@ void readBlockSingle(uint32_t blockIndex ){
 	// enable the spi peripheral
 	SPI_PeripheralControl(SPI2, ENABLE) ; // enable spi2 for communiation
 
+}
+
+void readBlockSingle(uint32_t blockIndex ){
 uint8_t res1 = 0xff ;
 	printf("CMD17\n") ;
 	Data[0] = 	0x51 ;
@@ -343,15 +346,21 @@ uint8_t res1 = 0xff ;
 	SPI_Read(SPI2, &res1, 1) ;
 	printf("1 %p \n" , res1) ;
 
-	for (uint16_t i = 0; i < 515; i++) {
+	for (uint16_t j = 0; j < 515; j++) {
 		SPI_Send(SPI2, &dummyByte, 1) ;
 		SPI_Read(SPI2, &dummyReadByte, 1) ; // dummy reaad
 		if (dummyReadByte == 0xFE) {
-			for (uint16_t i = 0;  i < 515; i++) {
+			for (uint16_t i = 0;  i < 514; i++) {
 		SPI_Send(SPI2, &dummyByte, 1) ;
 		SPI_Read(SPI2, &dummyReadByte, 1) ; // dummy read
-		printf("%p ", dummyReadByte) ;		// @needs to change
-		if (i >= 514 ) {
+		if (i == 510) {
+			printf("1 signature is %p \n" , dummyReadByte) ;
+		}else if (i == 511) {
+			printf("2 signature is %p \n" , dummyReadByte) ;
+		}else if (i == 512) {
+			printf("2 CRC is %p \n" , dummyReadByte) ;
+		}else if (i == 513) {
+			printf("2 CRC is %p \n" , dummyReadByte) ;
 			return ;
 		}
 			}
@@ -366,8 +375,60 @@ uint8_t res1 = 0xff ;
 }
 
 
-void writeBlockSingle(){
+void writeBlockSingle(uint32_t blockIndex , uint8_t data){
+	uint8_t res1 = 0xff ;
 	printf("CMD24\n") ;
+	Data[0] = 	0x58 ;
+	Data[1] = 	(blockIndex >> 24) ;
+	Data[2] = 	(blockIndex >> 16) ;
+	Data[3] = 	(blockIndex >> 8) ;
+	Data[4] = 	(blockIndex >> 0) ;
+	Data[5] =   (0x00 | 0x01);
+
+	SPI_Send(SPI2, &dummyByte, 1) ;
+	// delay some time
+	for (uint16_t i = 0;  i < 1000; i++) {}
+	selectSDcard() ;
+	SPI_Send(SPI2, &dummyByte, 1) ;
+
+	SPI_Send(SPI2, Data, 6);
+
+	SPI_Send(SPI2, &dummyByte, 1) ;
+	SPI_Read(SPI2, &res1, 1) ;
+	printf("1 %p \n" , res1) ;
+
+	SPI_Send(SPI2, &dummyByte, 1) ;
+	SPI_Read(SPI2, &res1, 1) ;
+	printf("1 %p \n" , res1) ;
+
+		if (res1 == 0) {
+		dummyByte = 0xFE ;
+		SPI_Send(SPI2, &dummyByte, 1) ;
+		dummyByte = 0xff ;
+		}
+			for (uint16_t i = 0;  i < 512; i++) {
+		SPI_Send(SPI2, &data, 1) ;
+			}
+			SPI_Send(SPI2, &dummyByte, 1) ;
+			SPI_Read(SPI2, &dummyReadByte, 1) ;
+
+			while((dummyReadByte & 0x0F) != 0x05){
+			SPI_Send(SPI2, &dummyByte, 1) ;
+			SPI_Read(SPI2, &dummyReadByte, 1) ;
+			}
+			   SPI_Send(SPI2, &dummyByte, 1) ;
+						SPI_Read(SPI2, &dummyReadByte, 1) ;
+
+			while(dummyReadByte == 0x00 ){
+		    SPI_Send(SPI2, &dummyByte, 1) ;
+			SPI_Read(SPI2, &dummyReadByte, 1) ;
+			}
+
+	SPI_Send(SPI2, &dummyByte, 1) ;
+	// delay some time
+	for (uint16_t i = 0;  i < 1000; i++) {}
+	deselectSDcard();
+	SPI_Send(SPI2, &dummyByte, 1) ;
 
 }
 
@@ -415,9 +476,18 @@ int main (void ){
 	// read OCR CCS field again
 	 readOCR();
 
-	 // read block of data , data at block 0
+	// perepare for read and write
+	prepReadWrite();
 
-	 readBlockSingle(0x0000ffff) ;
+	 // read block of data , data at block 0
+	 readBlockSingle(0x00000000) ;
+
+	 // write block of data , data at block 0
+	 writeBlockSingle(0x00000000 , 0x4A) ;
+
+	 // read block of data , data at block 0
+	 readBlockSingle(0x00000000) ;
+
 
 	//close the communication by disabling the peripherals
 
