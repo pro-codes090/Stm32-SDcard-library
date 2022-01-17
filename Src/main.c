@@ -365,6 +365,29 @@ uint8_t res1 = 0xff ;
 	SPI_Send(SPI2, &dummyByte, 1) ;
 }
 
+
+void writeBlockSingle(){
+	printf("CMD24\n") ;
+
+}
+
+void readBlockMultiple(uint32_t blockIndex ){
+	printf("CMD18\n") ;
+
+}
+
+
+void writeBlockMultiple(){
+	printf("CMD25\n") ;
+
+}
+
+void stopTransfer(){
+	printf("CMD12 \n") ;
+
+}
+
+
 int main (void ){
 	printf("application running \n") ;
 
