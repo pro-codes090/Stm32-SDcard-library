@@ -60,7 +60,7 @@ void SPI2_Inits(void)
 	SPI2handle.pSPIx = SPI2;
 	SPI2handle.SPIConfig.SPI_BusConfig = SPI_BUS_CONFIG_FD;
 	SPI2handle.SPIConfig.SPI_DeviceMode = SPI_DEVICE_MODE_MASTER;
-	SPI2handle.SPIConfig.SPI_SclkSpeed = SPI_SCLK_SPEED_DIV32;//generates sclk of 8MHz
+	SPI2handle.SPIConfig.SPI_SclkSpeed = SPI_SCLK_SPEED_DIV64;//generates sclk of 8MHz
 	SPI2handle.SPIConfig.SPI_DFF = SPI_DFF_8BITS;
 	SPI2handle.SPIConfig.SPI_CPOL = SPI_CPOL_LOW;
 	SPI2handle.SPIConfig.SPI_CPHA = SPI_CPHA_LOW;
@@ -117,7 +117,7 @@ void sdPowerUp(){
 }
 
 void sdInitSeq(){
-
+	uint8_t res7 = 0 ;
 	printf("CMD8 \n ") ;
 	Data[0] = 0x48 ;
 	Data[1] = 0x00 ;
@@ -178,6 +178,7 @@ uint8_t res3 ;
 	for (uint16_t i = 0;  i < 1000; i++) {}
 	selectSDcard() ;
 	SPI_Send(SPI2, &dummyByte, 1) ;
+
 	SPI_Send(SPI2, Data, 6) ;
 
 	SPI_Send(SPI2, &dummyByte, 1) ;
@@ -210,8 +211,26 @@ uint8_t res3 ;
 }
 
 void sd_final_Init(uint8_t cardType){
-	uint8_t R1_Response = 0xff ;
-while(R1_Response != 0x00){
+	SPI_PeripheralControl(SPI2, DISABLE) ;
+	deselectSDcard();
+	SPI_Handle_t SPI2handle;
+	SPI2handle.pSPIx = SPI2;
+	SPI2handle.SPIConfig.SPI_BusConfig = SPI_BUS_CONFIG_FD;
+	SPI2handle.SPIConfig.SPI_DeviceMode = SPI_DEVICE_MODE_MASTER;
+	SPI2handle.SPIConfig.SPI_SclkSpeed = SPI_SCLK_SPEED_DIV8;//generates sclk of 8MHz
+	SPI2handle.SPIConfig.SPI_DFF = SPI_DFF_8BITS;
+	SPI2handle.SPIConfig.SPI_CPOL = SPI_CPOL_LOW;
+	SPI2handle.SPIConfig.SPI_CPHA = SPI_CPHA_LOW;
+	SPI2handle.SPIConfig.SPI_SSM = SPI_SSM_EN; //software slave management enabled for NSS pin
+
+	SPI_Init(&SPI2handle);
+
+	SPI_SSIConfig(SPI2, ENABLE) ;	// mandate for software slave management
+	// enable the spi peripheral
+	SPI_PeripheralControl(SPI2, ENABLE) ; // enable spi2 for communiation
+
+uint8_t res1 = 0xff ;
+while(res1 != 0x00){
 
 printf("CMD55 \n") ;
 Data[0] = 	0x77 ;
@@ -221,15 +240,29 @@ Data[3] = 	0x00 ;
 Data[4] = 	0x00 ;
 Data[5] =   (0x00 | 0x01);
 
-SPI_Send(SPI2, Data, 6);	// we are sending an application specific command
 SPI_Send(SPI2, &dummyByte, 1) ;
-SPI_Read(SPI2, &dummyReadByte, 1) ; // dummy reaad
+// delay some time
+for (uint16_t i = 0;  i < 1000; i++) {}
+selectSDcard() ;
+SPI_Send(SPI2, &dummyByte, 1) ;
+
+//ACMD55
+SPI_Send(SPI2, Data, 6);
 
 SPI_Send(SPI2, &dummyByte, 1) ;
-SPI_Read(SPI2, &R1_Response, 1) ;	// read the response for CMD55
-printf("%d \n" , R1_Response ) ;
+SPI_Read(SPI2, &res1, 1) ;
+printf("1 %p \n" , res1) ;
 
-for (uint16_t i = 0; i <20000  ; i++) {}
+SPI_Send(SPI2, &dummyByte, 1) ;
+SPI_Read(SPI2, &res1, 1) ;
+printf("1 %p \n" , res1) ;
+
+
+SPI_Send(SPI2, &dummyByte, 1) ;
+// delay some time
+for (uint16_t i = 0;  i < 1000; i++) {}
+deselectSDcard();
+SPI_Send(SPI2, &dummyByte, 1) ;
 
 printf("ACMD41 \n") ;
 Data[0] = 	0x69 ;
@@ -239,24 +272,37 @@ Data[3] = 	0x00 ;
 Data[4] = 	0x00 ;
 Data[5] =   (0x00 | 0x01);
 
-SPI_Send(SPI2, Data, 6);	// sending ACMD41
 SPI_Send(SPI2, &dummyByte, 1) ;
-SPI_Read(SPI2, &dummyReadByte, 1) ; // dummy reaad
+// delay some time
+for (uint16_t i = 0;  i < 1000; i++) {}
+selectSDcard() ;
+SPI_Send(SPI2, &dummyByte, 1) ;
+
+//ACMD41
+SPI_Send(SPI2, Data, 6);
 
 SPI_Send(SPI2, &dummyByte, 1) ;
-SPI_Read(SPI2, &R1_Response, 1) ;	// read the response for CMD55
-printf("%d \n" , R1_Response ) ;
+SPI_Read(SPI2, &res1, 1) ;
+printf("1 %p \n" , res1) ;
 
-for (uint16_t i = 0; i <20000  ; i++) {}
+SPI_Send(SPI2, &dummyByte, 1) ;
+SPI_Read(SPI2, &res1, 1) ;
+printf("1 %p \n" , res1) ;
 
-   }
+
+SPI_Send(SPI2, &dummyByte, 1) ;
+// delay some time
+for (uint16_t i = 0;  i < 1000; i++) {}
+deselectSDcard();
+SPI_Send(SPI2, &dummyByte, 1) ;
+
+  }
 printf("Init Success \n ") ;
 }
 
 void readBlockSingle(uint32_t blockIndex ){
-
+	SPI_PeripheralControl(SPI2, DISABLE) ;
 	SPI_Handle_t SPI2handle;
-
 	SPI2handle.pSPIx = SPI2;
 	SPI2handle.SPIConfig.SPI_BusConfig = SPI_BUS_CONFIG_FD;
 	SPI2handle.SPIConfig.SPI_DeviceMode = SPI_DEVICE_MODE_MASTER;
@@ -272,7 +318,7 @@ void readBlockSingle(uint32_t blockIndex ){
 	// enable the spi peripheral
 	SPI_PeripheralControl(SPI2, ENABLE) ; // enable spi2 for communiation
 
-uint8_t R1_Response = 0xff ;
+uint8_t res1 = 0xff ;
 	printf("CMD17\n") ;
 	Data[0] = 	0x51 ;
 	Data[1] = 	(blockIndex >> 24) ;
@@ -281,13 +327,21 @@ uint8_t R1_Response = 0xff ;
 	Data[4] = 	(blockIndex >> 0) ;
 	Data[5] =   (0x00 | 0x01);
 
-	SPI_Send(SPI2, Data, 6);	// sending ACMD41
 	SPI_Send(SPI2, &dummyByte, 1) ;
-	SPI_Read(SPI2, &dummyReadByte, 1) ; // dummy reaad
+	// delay some time
+	for (uint16_t i = 0;  i < 1000; i++) {}
+	selectSDcard() ;
+	SPI_Send(SPI2, &dummyByte, 1) ;
+
+	SPI_Send(SPI2, Data, 6);
 
 	SPI_Send(SPI2, &dummyByte, 1) ;
-	SPI_Read(SPI2, &R1_Response, 1) ;	// read the response for CMD55
-	printf("%d \n" , R1_Response ) ;
+	SPI_Read(SPI2, &res1, 1) ;
+	printf("1 %p \n" , res1) ;
+
+	SPI_Send(SPI2, &dummyByte, 1) ;
+	SPI_Read(SPI2, &res1, 1) ;
+	printf("1 %p \n" , res1) ;
 
 	for (uint16_t i = 0; i < 515; i++) {
 		SPI_Send(SPI2, &dummyByte, 1) ;
@@ -303,6 +357,12 @@ uint8_t R1_Response = 0xff ;
 			}
 	    }
 	}
+
+	SPI_Send(SPI2, &dummyByte, 1) ;
+	// delay some time
+	for (uint16_t i = 0;  i < 1000; i++) {}
+	deselectSDcard();
+	SPI_Send(SPI2, &dummyByte, 1) ;
 }
 
 int main (void ){
@@ -332,12 +392,8 @@ int main (void ){
 	// read OCR CCS field again
 	 readOCR();
 
-	SPI_PeripheralControl(SPI2, DISABLE) ;
-	deselectSDcard();
 	 // read block of data , data at block 0
 
-	SPI_PeripheralControl(SPI2, ENABLE)  ;
-	selectSDcard() ;
 	 readBlockSingle(0x0000ffff) ;
 
 	//close the communication by disabling the peripherals
