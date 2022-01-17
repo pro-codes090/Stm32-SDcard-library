@@ -483,7 +483,7 @@ int main (void ){
 	 readBlockSingle(0x00000000) ;
 
 	 // write block of data , data at block 0
-	 writeBlockSingle(0x00000000 , 0x4A) ;
+	 writeBlockSingle(0x00000000 , 0x7F) ;
 
 	 // read block of data , data at block 0
 	 readBlockSingle(0x00000000) ;
