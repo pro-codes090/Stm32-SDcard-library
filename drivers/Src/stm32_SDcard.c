@@ -14,7 +14,6 @@ void selectSDcard(){GPIO_WriteToOutputPin(GPIOB, GPIO_PIN_NO_10, RESET);}
 static void sdPowerUp(){
 	uint8_t Data [] = {0xff ,0xff ,0xff ,0xff ,0xff ,0xff ,0xff ,0xff ,0xff ,0xff ,} ;
 	uint8_t dummyByte = 0xff ;
-	uint8_t dummyReadByte = 0xff ;
 	deselectSDcard();
 	// delay some time
 	for (uint16_t i = 0;  i < 1000; i++) {}
@@ -60,7 +59,6 @@ static void sdPowerUp(){
 static void sdInitSeq(){
 	uint8_t Data [] = {0xff ,0xff ,0xff ,0xff ,0xff ,0xff ,0xff ,0xff ,0xff ,0xff ,} ;
 	uint8_t dummyByte = 0xff ;
-	uint8_t dummyReadByte = 0xff ;
 	uint8_t res7 = 0 ;
 	printf("CMD8 \n ") ;
 	Data[0] = 0x48 ;
@@ -110,7 +108,7 @@ static void sdInitSeq(){
 static void readOCR() {
 	uint8_t Data [] = {0xff ,0xff ,0xff ,0xff ,0xff ,0xff ,0xff ,0xff ,0xff ,0xff ,} ;
 	uint8_t dummyByte = 0xff ;
-	uint8_t dummyReadByte = 0xff ;
+
 uint8_t res3 ;
 	printf("CMD58 \n ") ;
 	Data[0] = 0x7A ;
@@ -160,7 +158,7 @@ uint8_t res3 ;
 static void sd_final_Init(){
 	uint8_t Data [] = {0xff ,0xff ,0xff ,0xff ,0xff ,0xff ,0xff ,0xff ,0xff ,0xff ,} ;
 	uint8_t dummyByte = 0xff ;
-	uint8_t dummyReadByte = 0xff ;
+
 	SPI_PeripheralControl(SPI2, DISABLE) ;
 	deselectSDcard();
 	SPI_Handle_t SPI2handle;
@@ -388,5 +386,23 @@ void writeBlockSingle(uint32_t blockIndex , uint8_t data){
 
 }
 
+void SD_init(){
+	// start up sequence of sdcard
+	sdPowerUp();
 
+	// sd card init sequence like voltage verification
+	sdInitSeq();
+
+	// read OCR CCS field
+	readOCR();
+
+	// send ACMD41
+	 sd_final_Init(1);
+
+	// read OCR CCS field again
+	 readOCR();
+
+	// perepare for read and write
+	prepReadWrite();
+}
 

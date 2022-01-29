@@ -17,5 +17,8 @@
 
 void readBlockSingle(uint32_t blockIndex ) ;
 void writeBlockSingle(uint32_t blockIndex , uint8_t data) ;
+void SD_init();
+void deselectSDcard();
+void selectSDcard();
 
 #endif /* INC_STM32_SDCARD_H_ */

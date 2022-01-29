@@ -13,11 +13,8 @@
 #include "stm32f407xx.h"
 #include "stm32f407xx_gpio_driver.h"
 #include "stm32f407xx_spi_driver.h"
+#include "stm32_SDcard.h"
 
-uint8_t res7 = 0 ;
-uint8_t Data [] = {0xff ,0xff ,0xff ,0xff ,0xff ,0xff ,0xff ,0xff ,0xff ,0xff ,} ;
-uint8_t dummyByte = 0xff ;
-uint8_t dummyReadByte = 0xff ;
 void SPI2_GPIOInits(void)
 {
 	GPIO_Handle_t SPIPins;
@@ -41,7 +38,6 @@ void SPI2_GPIOInits(void)
 	//SCLK
 	SPIPins.GPIO_PinConfig.GPIO_PinNumber = GPIO_PIN_NO_13;
 	GPIO_Init(&SPIPins);
-
 
 	// pin for NSS pin
 	SPIPins.pGPIOx = GPIOB ;
@@ -85,23 +81,7 @@ int main (void ){
 	SPI_PeripheralControl(SPI2, ENABLE) ; // enable spi2 for communiation
 	// send data over spi
 
-	// start up sequence of sdcard
-	sdPowerUp();
-
-	// sd card init sequence like voltage verification
-	sdInitSeq();
-
-	// read OCR CCS field
-	readOCR();
-
-	// send ACMD41
-	 sd_final_Init(1);
-
-	// read OCR CCS field again
-	 readOCR();
-
-	// perepare for read and write
-	prepReadWrite();
+	SD_init();
 
 	 // read block of data , data at block 0
 	 readBlockSingle(0x00000000) ;
