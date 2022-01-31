@@ -268,7 +268,7 @@ static void prepReadWrite(){
 
 }
 
-void readBlockSingle(uint32_t blockIndex ){
+void readBlockSingle(uint32_t blockIndex , uint8_t *buffAddr){
 	uint8_t Data [] = {0xff ,0xff ,0xff ,0xff ,0xff ,0xff ,0xff ,0xff ,0xff ,0xff ,} ;
 	uint8_t dummyByte = 0xff ;
 	uint8_t dummyReadByte = 0xff ;
@@ -303,17 +303,19 @@ uint8_t res1 = 0xff ;
 		if (dummyReadByte == 0xFE) {
 			for (uint16_t i = 0;  i < 514; i++) {
 		SPI_Send(SPI2, &dummyByte, 1) ;
-		SPI_Read(SPI2, &dummyReadByte, 1) ; // dummy read
+		SPI_Read(SPI2, buffAddr, 1) ; // dummy read
 		if (i == 510) {
-			printf("1 signature is %p \n" , dummyReadByte) ;
+			printf("1 signature is %p \n" , *buffAddr) ;
 		}else if (i == 511) {
-			printf("2 signature is %p \n" , dummyReadByte) ;
+			printf("2 signature is %p \n" , *buffAddr) ;
 		}else if (i == 512) {
-			printf("2 CRC is %p \n" , dummyReadByte) ;
+			printf("2 CRC is %p \n" , *buffAddr) ;
 		}else if (i == 513) {
-			printf("2 CRC is %p \n" , dummyReadByte) ;
+			printf("2 CRC is %p \n" ,*buffAddr) ;
 			return ;
 		}
+
+		buffAddr++ ;
 			}
 	    }
 	}
@@ -326,7 +328,7 @@ uint8_t res1 = 0xff ;
 }
 
 
-void writeBlockSingle(uint32_t blockIndex , uint8_t data){
+void writeBlockSingle(uint32_t blockIndex , uint8_t *buffAddr){
 	uint8_t Data [] = {0xff ,0xff ,0xff ,0xff ,0xff ,0xff ,0xff ,0xff ,0xff ,0xff ,} ;
 	uint8_t dummyByte = 0xff ;
 	uint8_t dummyReadByte = 0xff ;
@@ -361,7 +363,8 @@ void writeBlockSingle(uint32_t blockIndex , uint8_t data){
 		dummyByte = 0xff ;
 		}
 			for (uint16_t i = 0;  i < 512; i++) {
-		SPI_Send(SPI2, &data, 1) ;
+		SPI_Send(SPI2, buffAddr, 1) ;
+		buffAddr++;
 			}
 			SPI_Send(SPI2, &dummyByte, 1) ;
 			SPI_Read(SPI2, &dummyReadByte, 1) ;

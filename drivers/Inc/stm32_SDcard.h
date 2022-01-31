@@ -15,8 +15,8 @@
 #include "stm32f407xx_gpio_driver.h"
 #include "stm32f407xx_spi_driver.h"
 
-void readBlockSingle(uint32_t blockIndex ) ;
-void writeBlockSingle(uint32_t blockIndex , uint8_t data) ;
+void readBlockSingle(uint32_t blockIndex , uint8_t *buffAddr) ;
+void writeBlockSingle(uint32_t blockIndex , uint8_t *buffAddr) ;
 void SD_init();
 void deselectSDcard();
 void selectSDcard();

@@ -6,5 +6,5 @@ stm32_SDcard.c:108:13:readOCR	32	static
 stm32_SDcard.c:158:13:sd_final_Init	72	static
 stm32_SDcard.c:251:13:prepReadWrite	40	static
 stm32_SDcard.c:271:6:readBlockSingle	40	static
-stm32_SDcard.c:329:6:writeBlockSingle	40	static
-stm32_SDcard.c:389:6:SD_init	8	static
+stm32_SDcard.c:331:6:writeBlockSingle	40	static
+stm32_SDcard.c:392:6:SD_init	8	static

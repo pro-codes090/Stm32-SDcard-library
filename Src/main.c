@@ -70,6 +70,12 @@ void SPI2_Inits(void)
 
 
 int main (void ){
+
+	uint8_t rcvSector [514] ;	// last two bytes are for CRC and do not belong to thw data in the sector
+	uint8_t txSector [512] ;	// transmitt buffer of 512 bytes to be sent as data to Sdcard
+
+	memset(txSector , 0xcc , 512) ;
+
 	printf("application running \n") ;
 
 	SPI2_GPIOInits(); 	// setup the gpio pins for spi communication
@@ -84,15 +90,21 @@ int main (void ){
 	SD_init();
 
 	 // read block of data , data at block 0
-	 readBlockSingle(0x00000000) ;
+	 readBlockSingle(0x00000000 , rcvSector) ;
+
+	 for (uint16_t i = 0;  i < 514; i++) {
+	 printf("%p \n" , rcvSector[i]) ;
+	 }
 
 	 // write block of data , data at block 0
-	 writeBlockSingle(0x00000000 , 0x7F) ;
+	 writeBlockSingle(0x00000000 , txSector) ;
 
 	 // read block of data , data at block 0
-	 readBlockSingle(0x00000000) ;
+	 readBlockSingle(0x00000000 ,rcvSector) ;
 
-
+	 for (uint16_t i = 0;  i < 514; i++) {
+	 printf("%p \n" , rcvSector[i]) ;
+	 }
 	//close the communication by disabling the peripherals
 
 
