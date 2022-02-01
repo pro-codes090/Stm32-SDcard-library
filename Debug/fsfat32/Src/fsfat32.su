@@ -1,0 +1,2 @@
+fsfat32.c:5:13:extractFat32Params	24	static
+fsfat32.c:35:6:readBpbBlock	16	static

@@ -14,6 +14,7 @@
 #include "stm32f407xx_gpio_driver.h"
 #include "stm32f407xx_spi_driver.h"
 #include "stm32_SDcard.h"
+#include "fsfat32.h"
 
 void SPI2_GPIOInits(void)
 {
@@ -74,6 +75,10 @@ int main (void ){
 	uint8_t rcvSector [514] ;	// last two bytes are for CRC and do not belong to thw data in the sector
 	uint8_t txSector [512] ;	// transmitt buffer of 512 bytes to be sent as data to Sdcard
 
+	fsfat32_t fsfat32 ;
+	fsfat32.rcvBuffAddr = rcvSector ;
+	fsfat32.txBuffAddr = txSector ;
+
 	memset(txSector , 0xcc , 512) ;
 
 	printf("application running \n") ;
@@ -89,23 +94,7 @@ int main (void ){
 
 	SD_init();
 
-	 // read block of data , data at block 0
-	 readBlockSingle(0x00000000 , rcvSector) ;
-
-	 for (uint16_t i = 0;  i < 514; i++) {
-	 printf("%p \n" , rcvSector[i]) ;
-	 }
-
-	 // write block of data , data at block 0
-	 writeBlockSingle(0x00000000 , txSector) ;
-
-	 // read block of data , data at block 0
-	 readBlockSingle(0x00000000 ,rcvSector) ;
-
-	 for (uint16_t i = 0;  i < 514; i++) {
-	 printf("%p \n" , rcvSector[i]) ;
-	 }
-	//close the communication by disabling the peripherals
+	readBpbBlock(&fsfat32) ;
 
 
 	while(1);

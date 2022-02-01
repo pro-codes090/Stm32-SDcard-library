@@ -5,29 +5,23 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
-../Src/main.c \
-../Src/syscalls.c \
-../Src/sysmem.c 
+../fsfat32/Src/fsfat32.c 
 
 OBJS += \
-./Src/main.o \
-./Src/syscalls.o \
-./Src/sysmem.o 
+./fsfat32/Src/fsfat32.o 
 
 C_DEPS += \
-./Src/main.d \
-./Src/syscalls.d \
-./Src/sysmem.d 
+./fsfat32/Src/fsfat32.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes
-Src/%.o: ../Src/%.c Src/subdir.mk
+fsfat32/Src/%.o: ../fsfat32/Src/%.c fsfat32/Src/subdir.mk
 	arm-none-eabi-gcc "$<" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DSTM32 -DSTM32F407G_DISC1 -DSTM32F4 -DSTM32F407VGTx -c -I../Inc -I"C:/Users/pro/Documents/stm32drivers/stm32f4_sdcard_spi/fsfat32" -I"C:/Users/pro/Documents/stm32drivers/stm32f4_sdcard_spi/fsfat32/Inc" -I"C:/Users/pro/Documents/stm32drivers/stm32f4_sdcard_spi/fsfat32/Src" -I"C:/Users/pro/Documents/stm32drivers/stm32f4_sdcard_spi/drivers/Inc" -I"C:/Users/pro/Documents/stm32drivers/stm32f4_sdcard_spi/drivers/Src" -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -MMD -MP -MF"$(@:%.o=%.d)" -MT"$@" --specs=nano.specs -mfloat-abi=soft -mthumb -o "$@"
 
-clean: clean-Src
+clean: clean-fsfat32-2f-Src
 
-clean-Src:
-	-$(RM) ./Src/main.d ./Src/main.o ./Src/syscalls.d ./Src/syscalls.o ./Src/sysmem.d ./Src/sysmem.o
+clean-fsfat32-2f-Src:
+	-$(RM) ./fsfat32/Src/fsfat32.d ./fsfat32/Src/fsfat32.o
 
-.PHONY: clean-Src
+.PHONY: clean-fsfat32-2f-Src
 
