@@ -19,7 +19,19 @@
 #define OFFSET_BPB_ROOTCLUS  	44
 #define OFFSET_BS_BOOTSIG    	66
 #define OFFSET_BS_VOLLAB     	71
+#define OFFSET_BPB_FATSz32		36
 
+typedef struct {
+	uint16_t BPB_BytsPerSec ;
+	uint8_t BPB_SecPerClus  ;
+	uint16_t BPB_RsvdSecCnt ;
+	uint8_t BPB_NumFATs     ;
+	uint32_t BPB_HiddSec    ;
+	// From Offset 36
+	uint32_t BPB_RootClus   ;
+	uint8_t BS_BootSig      ;
+	uint32_t BPB_FATSz32    ;
+}__attribute__((__packed__)) diskParams_t;
 
 typedef struct {
 uint8_t BPB_BytsPerSec[2] ;
@@ -31,12 +43,15 @@ uint8_t BPB_HiddSec   [4] ;
 uint8_t BPB_RootClus  [4] ;
 uint8_t BS_BootSig    [1] ;
 uint8_t BS_VolLab     [11];
+uint8_t   BPB_FATSz32 [4] ;
 uint8_t *rcvBuffAddr   ;
 uint8_t *txBuffAddr   ;
-
-}fsfat32_t;
+diskParams_t diskParam ;
+}__attribute__((__packed__))fsfat32_t;
 
 
 void readBpbBlock(fsfat32_t *pfsfat32) ;
+
+void getDataRegion (fsfat32_t *pfsfat32 ) ;
 
 #endif /* INC_FSFAT32_H_ */

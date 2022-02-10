@@ -69,17 +69,13 @@ void SPI2_Inits(void)
 }
 
 
-
 int main (void ){
-
-	uint8_t rcvSector [514] ;	// last two bytes are for CRC and do not belong to thw data in the sector
-	uint8_t txSector [512] ;	// transmitt buffer of 512 bytes to be sent as data to Sdcard
+	uint8_t rcvSector [514] = "";	// last two bytes are for CRC and do not belong to thw data in the sector
+	uint8_t txSector [512] = "" ;	// transmitt buffer of 512 bytes to be sent as data to Sdcard
 
 	fsfat32_t fsfat32 ;
 	fsfat32.rcvBuffAddr = rcvSector ;
 	fsfat32.txBuffAddr = txSector ;
-
-	memset(txSector , 0xcc , 512) ;
 
 	printf("application running \n") ;
 
@@ -95,7 +91,6 @@ int main (void ){
 	SD_init();
 
 	readBpbBlock(&fsfat32) ;
-
 
 	while(1);
 
