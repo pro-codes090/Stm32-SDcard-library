@@ -1,3 +1,1 @@
-fsfat32.c:5:13:extractFat32Params	32	static
-fsfat32.c:47:6:readBpbBlock	16	static
-fsfat32.c:57:6:getDataRegion	24	static
+fsfat32.c:10:6:readBPBandcompute	48	static

@@ -1,113 +1,81 @@
 #include "stm32_SDcard.h"
 #include "fsfat32.h"
 
+#define FAT_TYPE_32		32
+#define FAT_TYPE_16		16
+#define FAT_TYPE_12		12
 
-static void extractFat32Params(fsfat32_t *pfsfat32) {
+	BPB_structure_t * BPB ;
 
-	// Bytes per sector
-	for (uint8_t i = 0; i < sizeof(pfsfat32->BPB_BytsPerSec); i++) {
-		pfsfat32->BPB_BytsPerSec[sizeof(pfsfat32->BPB_BytsPerSec) -(i+1)] = pfsfat32->rcvBuffAddr[OFFSET_BPB_BYTSPERSEC +i] ; // little endain conversion
-		}
-	// sector per clustor
-	for (uint8_t i = 0; i < sizeof(pfsfat32->BPB_SecPerClus); i++) {
-			pfsfat32->BPB_SecPerClus[sizeof(pfsfat32->BPB_SecPerClus) -(i+1)] = pfsfat32->rcvBuffAddr[OFFSET_BPB_SECPERCLUS + i] ; // little endain conversion
-		}
-	// reserved sectors
-	for (uint8_t i = 0; i < sizeof(pfsfat32->BPB_RsvdSecCnt); i++) {
-			pfsfat32->BPB_RsvdSecCnt[sizeof(pfsfat32->BPB_RsvdSecCnt) -(i+1)] = pfsfat32->rcvBuffAddr[OFFSET_BPB_RSVDSECCNT + i] ; // little endain conversion
-		}
-	// Number of fats
-	for (uint8_t i = 0; i < sizeof(pfsfat32->BPB_NumFATs); i++) {
-			pfsfat32->BPB_NumFATs[sizeof(pfsfat32->BPB_NumFATs) -(i+1)] = pfsfat32->rcvBuffAddr[OFFSET_BPB_NUMFATS +i] ; // little endain conversion
-		}
-	// size of each of each fat fats
-	for (uint8_t i = 0; i < sizeof(pfsfat32->BPB_FATSz32); i++) {
-			pfsfat32->BPB_FATSz32[sizeof(pfsfat32->BPB_FATSz32) -(i+1)] = pfsfat32->rcvBuffAddr[OFFSET_BPB_FATSz32 + i] ; // little endain conversion
-		}
-	// hidden sectors
-	for (uint8_t i = 0; i < sizeof(pfsfat32->BPB_HiddSec); i++) {
-			pfsfat32->BPB_HiddSec[sizeof(pfsfat32->BPB_HiddSec) -(i+1)] = pfsfat32->rcvBuffAddr[OFFSET_BPB_HIDDSEC +i] ; // little endain conversion
-		}
-	// location of root clustor
-	for (uint8_t i = 0; i < sizeof(pfsfat32->BPB_RootClus); i++) {
-			pfsfat32->BPB_RootClus[sizeof(pfsfat32->BPB_RootClus) -(i+1)] = pfsfat32->rcvBuffAddr[OFFSET_BPB_ROOTCLUS +i] ; // little endain conversion
-		}
-	// Boot signature
-	for (uint8_t i = 0; i < sizeof(pfsfat32->BS_BootSig); i++) {
-			pfsfat32->BS_BootSig[sizeof(pfsfat32->BS_BootSig) -(i+1)] = pfsfat32->rcvBuffAddr[OFFSET_BS_BOOTSIG + i] ; // little endain conversion
-		}
-	// Volume Label
-	for (uint8_t i = 0; i < sizeof(pfsfat32->BS_VolLab); i++) {
-			pfsfat32->BS_VolLab[sizeof(pfsfat32->BS_VolLab) -(i+1)] = pfsfat32->rcvBuffAddr[OFFSET_BS_VOLLAB + i] ; // little endain conversion
-		}
+void readBPBandcompute( uint8_t * SD_BUFFER){
 
+	BPB = SD_BUFFER;
 
-}
+	readBlockSingle(0x00000000 , SD_BUFFER) ;
 
-void readBpbBlock(fsfat32_t *pfsfat32){
+	printf(" bytes per sector %d \n" , BPB->BPB_BytesPerSector) ;
+	printf("sector per cluster %d \n" , BPB->BPB_SectorPerCluster) ;
+	printf("reserved sector count %d \n" , BPB->BPB_ReservedSectorCount) ;
+	printf("number of fats %d \n" , BPB->BPB_NumberOfFats) ;
+	printf("Rootentcnt %d \n" , BPB->BPB_RootEntCnt) ;
+	printf("Root cluster %u \n" , BPB->BPB_RootClus) ;
+	printf("BPB To Sec 32 %u \n" , BPB->BPB_ToSec32) ;
+	printf("size of each fat %u \n" , BPB->BPB_FATSz32) ;
 
-	readBlockSingle(0x00000000, pfsfat32->rcvBuffAddr) ;
+	uint8_t RootDirSectors = ((BPB->BPB_RootEntCnt * 32) + (BPB->BPB_BytesPerSector - 1 )) / BPB->BPB_BytesPerSector ;
+	printf(" root dir count %u \n" , RootDirSectors) ;
 
-	extractFat32Params(pfsfat32) ;
+	    uint32_t FATSz ;
+	if(BPB->BPB_FTASz16!= 0){
+	    FATSz = BPB->BPB_FTASz16 ;
+	}else{
+	FATSz = BPB->BPB_FATSz32 ;
+	}
 
-	getDataRegion(pfsfat32) ;
+	uint32_t FirstDataSector = BPB->BPB_ReservedSectorCount + (BPB->BPB_NumberOfFats* FATSz) + RootDirSectors;
+	printf(" first data sector %u \n" , FirstDataSector) ;
 
-}
+	// determine the fat type
+	uint32_t totsec = 0 ;
+	if (BPB->BPB_ToSec16 != 0) {
+		totsec = BPB->BPB_ToSec16 ;
+	}else{
+		totsec = BPB->BPB_ToSec32 ;
+	}
 
-void getDataRegion (fsfat32_t *pfsfat32 ){
-//	uint64_t temp ;
-// formula from fat docs
-//	FirstDataSector = BPB_ResvdSecCnt + (BPB_NumFATs * FATSz) + RootDirSectors;
+	uint32_t DataSec = 0 ;
+	 DataSec = totsec - ( BPB->BPB_ReservedSectorCount + (BPB->BPB_NumberOfFats* FATSz) ) + RootDirSectors;
 
-	// extract the parametrs first
-	memset(&(pfsfat32->diskParam) , 0 , sizeof(pfsfat32->diskParam)) ;
+	 uint32_t CountofClusters = DataSec / BPB->BPB_SectorPerCluster ;
 
-	// BPB_BytsPerSec
-	pfsfat32->diskParam.BPB_BytsPerSec |=  (pfsfat32->BPB_BytsPerSec[0] << 8) ;
-	pfsfat32->diskParam.BPB_BytsPerSec |=  (pfsfat32->BPB_BytsPerSec[1] << 0) ;
-	printf("BPB_BytsPerSec %d \n  " , pfsfat32->diskParam.BPB_BytsPerSec) ;
+	 uint8_t fatType = 0 ;
 
-	// BPB_SecPerClus
-	pfsfat32->diskParam.BPB_SecPerClus |=  (pfsfat32->BPB_SecPerClus[0] << 0) ;
-	printf("BPB_SecPerClus %d \n  " , pfsfat32->diskParam.BPB_SecPerClus ) ;
+	 if(CountofClusters < 4085) {
+	 /* Volume is FAT12 */
+		 fatType = FAT_TYPE_12 ;
+		 printf("volume is fat 12 %u \n" , CountofClusters) ;
+	 } else if(CountofClusters < 65525) {
+	     /* Volume is FAT16 */
+		 fatType = FAT_TYPE_16 ;
+		 printf("volume is fat 16 %u \n" , CountofClusters) ;
+	 } else {
+	     /* Volume is FAT32 */
+		 fatType = FAT_TYPE_32 ;
+		 printf("volume is fat 32 %u \n" , CountofClusters) ;
 
-	// BPB_RsvdSecCnt
-	pfsfat32->diskParam.BPB_RsvdSecCnt |=  (pfsfat32->BPB_RsvdSecCnt[0] << 8) ;
-	pfsfat32->diskParam.BPB_RsvdSecCnt |=  (pfsfat32->BPB_RsvdSecCnt[1] << 0) ;
-	printf("BPB_RsvdSecCnt %d \n  " , pfsfat32->diskParam.BPB_RsvdSecCnt ) ;
+	 }
 
-	// BPB_NumFATs
-	pfsfat32->diskParam.BPB_NumFATs |=  (pfsfat32->BPB_NumFATs[0] << 0) ;
-	printf("BPB_NumFATs %d \n  " , pfsfat32->diskParam.BPB_NumFATs) ;
+	 // Cluster to FAT maping
 
-	// BPB_FATSz32
-	pfsfat32->diskParam.BPB_FATSz32 |=  (pfsfat32->BPB_FATSz32 [0] << 24) ;
-	pfsfat32->diskParam.BPB_FATSz32 |=  (pfsfat32->BPB_FATSz32 [1] << 16) ;
-	pfsfat32->diskParam.BPB_FATSz32 |=  (pfsfat32->BPB_FATSz32 [2] << 8) ;
-	pfsfat32->diskParam.BPB_FATSz32 |=  (pfsfat32->BPB_FATSz32 [3] << 0) ;
-	printf("BPB_FATSz32 %d \n  " , pfsfat32->diskParam.BPB_FATSz32  ) ;
+	 // we do not do for fat 12 as of now
 
-	// BPB_HiddSec
-	pfsfat32->diskParam.BPB_HiddSec |=  (pfsfat32->BPB_HiddSec[0] << 24) ;
-	pfsfat32->diskParam.BPB_HiddSec |=  (pfsfat32->BPB_HiddSec[1] << 16) ;
-	pfsfat32->diskParam.BPB_HiddSec |=  (pfsfat32->BPB_HiddSec[2] << 8) ;
-	pfsfat32->diskParam.BPB_HiddSec |=  (pfsfat32->BPB_HiddSec[3] << 0) ;
-	printf("BPB_HiddSec %d \n  " , pfsfat32->diskParam.BPB_HiddSec) ;
+	 If(fatType == FAT_TYPE_16)
+	     FATOffset = N * 2;
+	 Else if (FATType == FAT32)
+	     FATOffset = N * 4;
 
-	// BPB_RootClus
-	pfsfat32->diskParam.BPB_RootClus |=  (pfsfat32->BPB_RootClus[0] << 24) ;
-	pfsfat32->diskParam.BPB_RootClus |=  (pfsfat32->BPB_RootClus[1] << 16) ;
-	pfsfat32->diskParam.BPB_RootClus |=  (pfsfat32->BPB_RootClus[2] << 8) ;
-	pfsfat32->diskParam.BPB_RootClus |=  (pfsfat32->BPB_RootClus[3] << 0) ;
-	printf("BPB_RootClus %d \n  " , pfsfat32->diskParam.BPB_RootClus) ;
-
-	uint32_t FirstDataSector ;
-	FirstDataSector = ( pfsfat32->diskParam.BPB_RsvdSecCnt + (pfsfat32->diskParam.BPB_NumFATs * pfsfat32->diskParam.BPB_FATSz32) + 0);
-	printf("first data sector %d \n " , FirstDataSector) ;
-
-	readBlockSingle(FirstDataSector, pfsfat32->rcvBuffAddr) ;
-
-
+	 ThisFATSecNum = BPB_ResvdSecCnt + (FATOffset / BPB_BytsPerSec);
+	 ThisFATEntOffset = REM(FATOffset / BPB_BytsPerSec);
 
 
 }
