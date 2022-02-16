@@ -31,8 +31,12 @@ uint16_t BPB_FSVer ;
 uint32_t BPB_RootClus ;
 uint16_t BPB_FSInfo;
 uint16_t BPB_BkBootSec;
-
+fatCal_t fatcal ;
 }__attribute__((__packed__))BPB_structure_t;
+
+typedef struct {
+uint8_t fatType ;
+}__attribute__((__packed__))fatCal_t;
 
 void readBPBandcompute( uint8_t * SD_BUFFER);
 

@@ -52,32 +52,34 @@ void readBPBandcompute( uint8_t * SD_BUFFER){
 
 	 if(CountofClusters < 4085) {
 	 /* Volume is FAT12 */
-		 fatType = FAT_TYPE_12 ;
+		 BPB->fatcal.fatType = FAT_TYPE_12 ;
 		 printf("volume is fat 12 %u \n" , CountofClusters) ;
 	 } else if(CountofClusters < 65525) {
 	     /* Volume is FAT16 */
-		 fatType = FAT_TYPE_16 ;
+		 BPB->fatcal.fatType= FAT_TYPE_16 ;
 		 printf("volume is fat 16 %u \n" , CountofClusters) ;
 	 } else {
 	     /* Volume is FAT32 */
-		 fatType = FAT_TYPE_32 ;
+		 BPB->fatcal.fatType = FAT_TYPE_32 ;
 		 printf("volume is fat 32 %u \n" , CountofClusters) ;
 
 	 }
 
-	 // Cluster to FAT maping
+}
 
-	 // we do not do for fat 12 as of now
+fatToclusterMap(uint32_t ClusterNumber ){
+	 uint32_t  FATOffset = 0  ;
 
-	 If(fatType == FAT_TYPE_16)
+	 if(BPB->fatcal == FAT_TYPE_16){
 	     FATOffset = N * 2;
-	 Else if (FATType == FAT32)
+	 }
+	 else if (BPB->fatcal== FAT_TYPE_32){
 	     FATOffset = N * 4;
-
+	}
 	 ThisFATSecNum = BPB_ResvdSecCnt + (FATOffset / BPB_BytsPerSec);
 	 ThisFATEntOffset = REM(FATOffset / BPB_BytsPerSec);
 
-
+	 return
 }
 
 
