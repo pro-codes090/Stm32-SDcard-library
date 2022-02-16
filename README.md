@@ -17,7 +17,7 @@ The hardware requirements are :
 
 ##  
 
->    **Note:**  To ensure proper working make sure that all the hardware connections are properly doe and have no loose ends . make sure the wire lenght is as short as possible to avoid any problems commucntion between sdcard and the microcontroller is done over SPI .It is recommended to make connection on a prototyping pcb as shown in ***figure 1.0*** below    
+>    **Note:**  To ensure proper working make sure that all the hardware connections are properly doe and have no loose ends . make sure the wire lenght is as short as possible to avoid any problems commucntion between sdcard and the microcontroller is done over SPI .It is recommended to make connection on a prototyping pcb as shown below or similar    
 
 ![ ](https://drive.google.com/uc?export=view&id=1f3EHwJMU6KvdZASp3M_vwiQEmJz3vAp2)
 
