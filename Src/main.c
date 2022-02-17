@@ -70,7 +70,7 @@ void SPI2_Inits(void)
 
 
 int main (void ){
-	uint8_t SD_BUFFER [514] = "";	// last two bytes are for CRC and do not belong to thw data in the sector
+	uint8_t SD_BUFFER [514] ;	// last two bytes are for CRC and do not belong to thw data in the sector
 
 	printf("application running \n") ;
 
@@ -85,7 +85,9 @@ int main (void ){
 
 	SD_init();
 
-	readBPBandcompute(SD_BUFFER);
+    fsfat32_t fsfat32 ;
+	fsfat32_Init(&fsfat32, SD_BUFFER ) ;
+
 
 	while(1);
 

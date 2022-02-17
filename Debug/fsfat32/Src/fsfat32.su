@@ -1,1 +1,5 @@
-fsfat32.c:10:6:readBPBandcompute	48	static
+fsfat32.c:4:6:fsfat32_Init	16	static
+fsfat32.c:14:6:readBPB	16	static
+fsfat32.c:30:6:getRootDirectory	16	static
+fsfat32.c:38:6:getFatType	32	static
+fsfat32.c:76:6:mapClusterToFat	32	static
