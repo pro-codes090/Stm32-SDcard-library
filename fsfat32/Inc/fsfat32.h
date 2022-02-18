@@ -69,6 +69,10 @@ fatCal_t fatcal ;
 }__attribute__((__packed__))BPB_structure_t;
 
 typedef struct {
+uint32_t FAT32ClusEntryVal ;
+}__attribute__((__packed__))clusfat_t;
+
+typedef struct {
 BPB_structure_t BPB;
 uint8_t RootDirSectors ;
 uint32_t firstDatasector ;
@@ -76,16 +80,13 @@ uint8_t fatType ;
 clusfat_t clusfat ;
 }__attribute__((__packed__))fsfat32_t;
 
-typedef struct {
-uint32_t ThisFatSecNum ;
-uint32_t ThisFATEntOffset ;
-
-}__attribute__((__packed__))clusfat_t;
 
 
 void readBPB( fsfat32_t * fsfat32, uint8_t * SD_BUFFER);
 void getRootDirectory(fsfat32_t *fsfat32);
 void fsfat32_Init(fsfat32_t *fsfat32, uint8_t * SD_BUFFER);
 void getFatType(fsfat32_t *fsfat32);
+void mapClusterToFat(fsfat32_t *fsfat32 , uint32_t clusterNumber ,uint8_t * SD_BUFFER);
+
 
 #endif /* INC_FSFAT32_H_ */

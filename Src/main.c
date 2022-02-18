@@ -89,6 +89,9 @@ int main (void ){
 	fsfat32_Init(&fsfat32, SD_BUFFER ) ;
 
 
+	mapClusterToFat(&fsfat32, 06, SD_BUFFER);
+
+
 	while(1);
 
 	return 0;
