@@ -90,6 +90,7 @@ int main (void ){
 
 
 	mapClusterToFat(&fsfat32, 06, SD_BUFFER);
+	GetNumOfFilesInRoot(&fsfat32, SD_BUFFER) ;
 
 
 	while(1);

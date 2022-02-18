@@ -34,7 +34,6 @@ void getRootDirectory(fsfat32_t *fsfat32){
 
 }
 
-
 void getFatType(fsfat32_t *fsfat32){
 	uint32_t FATSz ;
 	if(fsfat32->BPB.BPB_FTASz16 != 0){
@@ -91,6 +90,7 @@ fsfat32->clusfat.FAT32ClusEntryVal = 0 ;
 	readBlockSingle(ThisFatSecNum, SD_BUFFER) ;
 
 	 printf("ThisFATEntOffset is : %d \n " , ThisFATEntOffset) ;
+	 printf("ThisFatSecNum is : %d \n " , ThisFatSecNum) ;
 
 	 fsfat32->clusfat.FAT32ClusEntryVal |= ( (SD_BUFFER[ThisFATEntOffset] << 0) );
 	 fsfat32->clusfat.FAT32ClusEntryVal |= ( (SD_BUFFER[ThisFATEntOffset + 1] << 8) );
@@ -100,6 +100,21 @@ fsfat32->clusfat.FAT32ClusEntryVal = 0 ;
 	 fsfat32->clusfat.FAT32ClusEntryVal & 0x0FFFFFFF ;
 
 	 printf("cluster number calculated from ThisFATEntOffset  is : %d \n " , fsfat32->clusfat.FAT32ClusEntryVal ) ;
+}
+
+uint32_t GetNumOfFilesInRoot(fsfat32_t *fsfat32 ,uint8_t * SD_BUFFER ){
+
+	uint32_t NumOfFiles = 0 ;
+
+	mapClusterToFat(fsfat32, 2, SD_BUFFER) ;
+	while (fsfat32->clusfat.FAT32ClusEntryVal != 0x0FFFFFFF) {
+		mapClusterToFat(fsfat32, fsfat32->clusfat.FAT32ClusEntryVal, SD_BUFFER) ;
+		printf("next cluster is : %d \n" , fsfat32->clusfat.FAT32ClusEntryVal) ;
+
+	}
 
 }
+
+void readClusterChain(fsfat32_t *fsfat32 , uint32_t startCluster ,uint8_t * SD_BUFFER) {}
+
 

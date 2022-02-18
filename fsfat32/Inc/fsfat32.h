@@ -78,7 +78,25 @@ uint8_t RootDirSectors ;
 uint32_t firstDatasector ;
 uint8_t fatType ;
 clusfat_t clusfat ;
+uint8_t FileReadComplete ;
+uint8_t FileWriteComplete ;
 }__attribute__((__packed__))fsfat32_t;
+
+
+typedef struct {
+uint8_t DIR_Name[11] ;
+uint8_t DIR_Attr ;
+uint8_t DIR_NTRes ;
+uint8_t DIR_CrtTimeTenth;
+uint16_t DIR_CrtTime ;
+uint16_t DIR_CrtDate ;
+uint16_t DIR_LstAccDate ;
+uint16_t DIR_FstClusHI ;
+uint16_t DIR_WrtTime ;
+uint16_t DIR_WrtDate ;
+uint16_t DIR_FstClusLO ;
+uint32_t DIR_FileSize ;
+}__attribute__((__packed__))Dir_Entry_t;
 
 
 
@@ -87,6 +105,7 @@ void getRootDirectory(fsfat32_t *fsfat32);
 void fsfat32_Init(fsfat32_t *fsfat32, uint8_t * SD_BUFFER);
 void getFatType(fsfat32_t *fsfat32);
 void mapClusterToFat(fsfat32_t *fsfat32 , uint32_t clusterNumber ,uint8_t * SD_BUFFER);
-
+void readClusterChain(fsfat32_t *fsfat32 , uint32_t startCluster ,uint8_t * SD_BUFFER) ;
+uint32_t GetNumOfFilesInRoot(fsfat32_t *fsfat32 ,uint8_t * SD_BUFFER );
 
 #endif /* INC_FSFAT32_H_ */
