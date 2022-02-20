@@ -105,7 +105,6 @@ void getRootDirectory(fsfat32_t *fsfat32);
 void fsfat32_Init(fsfat32_t *fsfat32, uint8_t * SD_BUFFER);
 void getFatType(fsfat32_t *fsfat32);
 void mapClusterToFat(fsfat32_t *fsfat32 , uint32_t clusterNumber ,uint8_t * SD_BUFFER);
-void readClusterChain(fsfat32_t *fsfat32 , uint32_t startCluster ,uint8_t * SD_BUFFER) ;
-uint32_t GetNumOfFilesInRoot(fsfat32_t *fsfat32 ,uint8_t * SD_BUFFER );
+void readFile(fsfat32_t *fsfat32 , uint8_t *SD_BUFFER ,char fileName[11], uint8_t Next);
 
 #endif /* INC_FSFAT32_H_ */

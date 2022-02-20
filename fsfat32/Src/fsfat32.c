@@ -102,19 +102,25 @@ fsfat32->clusfat.FAT32ClusEntryVal = 0 ;
 	 printf("cluster number calculated from ThisFATEntOffset  is : %d \n " , fsfat32->clusfat.FAT32ClusEntryVal ) ;
 }
 
-uint32_t GetNumOfFilesInRoot(fsfat32_t *fsfat32 ,uint8_t * SD_BUFFER ){
+void readFile(fsfat32_t *fsfat32 , uint8_t *SD_BUFFER ,char fileName[11], uint8_t Next){
 
-	uint32_t NumOfFiles = 0 ;
+	printf("%s \n" , fileName );
 
+	// search for the file in the root first
 	mapClusterToFat(fsfat32, 2, SD_BUFFER) ;
-	while (fsfat32->clusfat.FAT32ClusEntryVal != 0x0FFFFFFF) {
-		mapClusterToFat(fsfat32, fsfat32->clusfat.FAT32ClusEntryVal, SD_BUFFER) ;
-		printf("next cluster is : %d \n" , fsfat32->clusfat.FAT32ClusEntryVal) ;
+
+	/* search for the file in the first cluster with first 80 bytes
+	because it has entry for system volume info as long file name and is of no use */
+
+	for (uint32_t i = 0; i < ( ( fsfat32->BPB.BPB_BytesPerSector )* (fsfat32->BPB.BPB_SectorPerCluster) ) ; i++) {
+
+		// copy into structure first and then search
 
 	}
 
+
+	while(fsfat32->clusfat.FAT32ClusEntryVal != 0x0FFFFFFF){
+		mapClusterToFat(fsfat32, fsfat32->clusfat.FAT32ClusEntryVal , SD_BUFFER) ;
+	}
 }
-
-void readClusterChain(fsfat32_t *fsfat32 , uint32_t startCluster ,uint8_t * SD_BUFFER) {}
-
 
