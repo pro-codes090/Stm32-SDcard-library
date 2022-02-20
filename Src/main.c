@@ -89,6 +89,7 @@ int main (void ){
 	fsfat32_Init(&fsfat32, SD_BUFFER ) ;
 
 
+
 	readFile(&fsfat32, SD_BUFFER, "ABC", 1)  ;
 
 	while(1);

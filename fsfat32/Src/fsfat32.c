@@ -104,17 +104,28 @@ fsfat32->clusfat.FAT32ClusEntryVal = 0 ;
 
 void readFile(fsfat32_t *fsfat32 , uint8_t *SD_BUFFER ,char fileName[11], uint8_t Next){
 
-	printf("%s \n" , fileName );
+	printf("file to search : %s \n" , fileName );
+	Dir_Entry_t DirEntry ;
 
 	// search for the file in the root first
-	mapClusterToFat(fsfat32, 2, SD_BUFFER) ;
+	mapClusterToFat(fsfat32, fsfat32->BPB.BPB_RootClus, SD_BUFFER) ;
 
 	/* search for the file in the first cluster with first 80 bytes
 	because it has entry for system volume info as long file name and is of no use */
 
-	for (uint32_t i = 0; i < ( ( fsfat32->BPB.BPB_BytesPerSector )* (fsfat32->BPB.BPB_SectorPerCluster) ) ; i++) {
+	for (uint8_t i = 0;  i < 4; i++) {
+		readBlockSingle(fsfat32->firstDatasector + i, SD_BUFFER) ;
+		// copy into structure first and then search the file name and print
 
-		// copy into structure first and then search
+		if (i == 0) {
+		memcpy(&DirEntry ,&SD_BUFFER[96] , sizeof(DirEntry) ) ;
+		}else{
+		memcpy(&DirEntry , SD_BUFFER , sizeof(DirEntry) ) ;
+		}
+		char fName [12] ;
+		strcpy(fName , DirEntry.DIR_Name ) ;
+		fName[11] = '\0' ;
+		printf("file name is : %s \n" , fName) ;
 
 	}
 

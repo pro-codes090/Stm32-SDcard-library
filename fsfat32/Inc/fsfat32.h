@@ -42,8 +42,6 @@ uint8_t fatType ;
 #define FAT_TYPE_16		16
 #define FAT_TYPE_12		12
 
-#define FirstSectorOfCluster(N , p_FSFAT32)  ( ((N - 2) * p_FSFAT32->BPB.BPB_SectorPerCluster) + p_FSFAT32->firstDatasector)
-
 typedef struct {
 uint8_t BS_jumpBoot [3];
 uint8_t BS_OEMName [8] ;
@@ -84,7 +82,7 @@ uint8_t FileWriteComplete ;
 
 
 typedef struct {
-uint8_t DIR_Name[11] ;
+char DIR_Name[11] ;
 uint8_t DIR_Attr ;
 uint8_t DIR_NTRes ;
 uint8_t DIR_CrtTimeTenth;
