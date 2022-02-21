@@ -25,4 +25,4 @@ The hardware requirements are :
 
 ![ ](https://drive.google.com/uc?export=view&id=1evlGqBQPHWv-eM6SqtXHf4bkGUMMkrra)
 
->  currently we are constanlty working to bring fat32 file system support to the library which is on filesystem branch and will soon be merged witth the main .  Full documentation on driver apis usage will soon be available by  22nd feb 2022 along with new features . Reading and writing sectors from the sd card can still be done by referring to the example in the *Src* . The driver apis are going under constant changes and revisons and hence giving a concret documentation is not possible at the moment  . 
+>  currently we are constanlty working to bring fat32 file system support to the library which is on filesystem branch and will soon be merged witth the main .  Full documentation on driver apis usage will soon be available by  soon along with new features . Reading and writing sectors from the sd card can still be done by referring to the example in the *Src* . The driver apis are going under constant changes and revisons and hence giving a concret documentation is not possible at the moment  . 
