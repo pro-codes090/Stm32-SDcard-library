@@ -68,6 +68,7 @@ fatCal_t fatcal ;
 
 typedef struct {
 uint32_t FAT32ClusEntryVal ;
+uint32_t currentSector ;
 }__attribute__((__packed__))clusfat_t;
 
 typedef struct {

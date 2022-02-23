@@ -122,14 +122,16 @@ void readFile(fsfat32_t *fsfat32 , uint8_t *SD_BUFFER ,char fileName[11], uint8_
   * finished */
 
  // first get the value of next cluster from fat table after cluster 2
- while (fsfat32->clusfat.FAT32ClusEntryVal != 0xF0FFFFFF){
+ mapClusterToFat(fsfat32, 2, SD_BUFFER) ;
+
+ while (fsfat32->clusfat.FAT32ClusEntryVal != 0x0FFFFFFF){
 
 	 // the value " FAT32ClusEntryVal " is the value of next cluster after the previous cluster is read
 	 // get the first sector number of a cluster and fetch the data in that sector
-
+	 fsfat32->clusfat.currentSector = ((fsfat32->clusfat.FAT32ClusEntryVal -2) * fsfat32->BPB.BPB_SectorPerCluster ) + fsfat32->firstDatasector;
 
 	 for (uint8_t i = 0;  i < fsfat32->BPB.BPB_SectorPerCluster ; i++) {
-		readBlockSingle(fsfat32->firstDatasector + i, SD_BUFFER) ;			// for every block in a sector (8 ideally)
+		readBlockSingle(fsfat32->clusfat.currentSector + i, SD_BUFFER) ;			// for every block in a sector (8 ideally)
 
 		for (uint8_t i = 0; i < 16; i++) {			// for every directory entry i.e 16 in a block
 			// map dir entry with sd buffer
@@ -138,6 +140,6 @@ void readFile(fsfat32_t *fsfat32 , uint8_t *SD_BUFFER ,char fileName[11], uint8_
 			printf("file name is : %s \n" , DirEntry.DIR_Name) ;
 		}
 	  }
- }
-
+	 mapClusterToFat(fsfat32, fsfat32->clusfat.FAT32ClusEntryVal, SD_BUFFER) ;
+   }
 }
