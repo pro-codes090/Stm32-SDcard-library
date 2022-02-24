@@ -53,7 +53,8 @@ void getFatType(fsfat32_t *fsfat32){
 		totsec = fsfat32->BPB.BPB_ToSec32 ;
 	}
 
-	 uint32_t CountofClusters = ( (totsec - ( fsfat32->BPB.BPB_ReservedSectorCount + (fsfat32->BPB.BPB_NumberOfFats* FATSz) ) + fsfat32->RootDirSectors) / (fsfat32->BPB.BPB_SectorPerCluster) );
+	 uint32_t CountofClusters = ( (totsec - ( fsfat32->BPB.BPB_ReservedSectorCount + (fsfat32->BPB.BPB_NumberOfFats* FATSz) )
+			 	 	 	 	 	 + fsfat32->RootDirSectors) / (fsfat32->BPB.BPB_SectorPerCluster) );
 
 	 if(CountofClusters < 4085) {
 	 /* Volume is FAT12 */
@@ -102,8 +103,46 @@ fsfat32->clusfat.FAT32ClusEntryVal = 0 ;
 	 printf("cluster number calculated from ThisFATEntOffset  is : %d \n " , fsfat32->clusfat.FAT32ClusEntryVal ) ;
 }
 
-void readFile(fsfat32_t *fsfat32 , uint8_t *SD_BUFFER ,char fileName[11], uint8_t Next){
+void readFile(fsfat32_t *fsfat32 , uint8_t *SD_BUFFER ,char fileName[11] , uint8_t Next){
 	printf("file to search : %s \n" , fileName );
+	char Name [7] ="" ;
+	memset(Name , 0x20 , 7) ;
+	char Extension[3] ="" ;
+	memset(Extension, 0x20 , 7) ;
+	// make the actual string to compare
+	char DOSName[12] = "xxxxxxxxxxx" ;
+	memset(DOSName ,0x20 , 12) ;
+	char str[11] = "";
+	strcpy(str , fileName) ;
+	   const char s[1] = ".";
+	   char *token;
+	   char *tempToken;
+	   /* get the first token */
+	   token = strtok(str, s);
+	   uint8_t cnt = 0 ;
+	   /* walk through other tokens */
+		   printf( "cnt is : %d\n", cnt);
+	      printf( " %s\n", token );
+	      strcpy(Name ,token) ;
+	      for (uint8_t i = 0; i < 7; i++) {
+	    	  if (Name[i] == 0) {
+			Name[i] = 0x20 ;
+			}
+		}
+	      while(token != NULL){
+	      tempToken = token ;
+	      token = strtok(NULL, s);
+	      if (token == 0) {
+			memcpy(Extension ,tempToken, 3) ;
+	      cnt += 1 ;
+	      }
+	   }
+	// form the final string which is DOS compatible
+	      memcpy(DOSName , Name , 7) ;
+	      memcpy(&DOSName[8], Extension, 3) ;
+	      DOSName[11] = '\0' ;
+	      printf("DOS NAME IS %s \n" , DOSName) ;
+
 	Dir_Entry_t DirEntry ;
 
  for (uint8_t i = 0;  i < fsfat32->BPB.BPB_SectorPerCluster ; i++) {
