@@ -152,7 +152,16 @@ void readFile(fsfat32_t *fsfat32 , uint8_t *SD_BUFFER ,char fileName[11] , uint8
 		// map dir entry with sd buffer
 		memcpy(&DirEntry , &SD_BUFFER[(i*32)] , sizeof(DirEntry)) ;
 		DirEntry.DIR_Name[11] = '\0' ;
-		printf("file name is : %s \n" , DirEntry.DIR_Name) ;
+
+		// compare the names and exclude the deleted entries
+		if (DirEntry.DIR_Name[0] != 0xE5) {
+			if (strcmp(DirEntry.DIR_Name , DOSName)== 0) {
+				printf("match found for: %s\n" , DOSName ) ;
+				return ;
+			}
+			printf("file name is : %s \n" , DirEntry.DIR_Name) ;
+				}
+
 	}
   }
 
@@ -176,7 +185,17 @@ void readFile(fsfat32_t *fsfat32 , uint8_t *SD_BUFFER ,char fileName[11] , uint8
 			// map dir entry with sd buffer
 			memcpy(&DirEntry , &SD_BUFFER[(i*32)] , sizeof(DirEntry)) ;
 			DirEntry.DIR_Name[11] = '\0' ;
-			printf("file name is : %s \n" , DirEntry.DIR_Name) ;
+
+			// compare the names and exclude the deleted entries
+			if (DirEntry.DIR_Name[0] != 0xE5) {
+				if (strcmp(DirEntry.DIR_Name , DOSName)== 0) {
+					printf("match found for: %s\n" , DOSName ) ;
+
+					return ;
+				}
+				printf("file name is : %s \n" , DirEntry.DIR_Name) ;
+			}
+
 		}
 	  }
 	 mapClusterToFat(fsfat32, fsfat32->clusfat.FAT32ClusEntryVal, SD_BUFFER) ;
