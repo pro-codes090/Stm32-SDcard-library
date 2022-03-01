@@ -88,7 +88,7 @@ int main (void ){
     fsfat32_t fsfat32 ;
 	fsfat32_Init(&fsfat32, SD_BUFFER ) ;
 
-	readFile(&fsfat32, SD_BUFFER, "PRO(17).TXT", 1)  ;
+	readFile(&fsfat32, SD_BUFFER, "DEV(14).TXT", 1)  ;
 
 	while(1);
 

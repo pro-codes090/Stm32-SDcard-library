@@ -110,7 +110,7 @@ void readFile(fsfat32_t *fsfat32 , uint8_t *SD_BUFFER ,char fileName[11] , uint8
 	char Extension[3] ="" ;
 	memset(Extension, 0x20 , 7) ;
 	// make the actual string to compare
-	char DOSName[12] = "xxxxxxxxxxx" ;
+	char DOSName[12] = "xxxxxxxxxxx" ; // some dummy data
 	memset(DOSName ,0x20 , 12) ;
 	char str[11] = "";
 	strcpy(str , fileName) ;
@@ -119,24 +119,22 @@ void readFile(fsfat32_t *fsfat32 , uint8_t *SD_BUFFER ,char fileName[11] , uint8
 	   char *tempToken;
 	   /* get the first token */
 	   token = strtok(str, s);
-	   uint8_t cnt = 0 ;
 	   /* walk through other tokens */
-		   printf( "cnt is : %d\n", cnt);
-	      printf( " %s\n", token );
-	      strcpy(Name ,token) ;
-	      for (uint8_t i = 0; i < 7; i++) {
-	    	  if (Name[i] == 0) {
-			Name[i] = 0x20 ;
-			}
+//	   printf( "cnt is : %d\n", cnt);
+	   printf( " %s\n", token );
+	   strcpy(Name ,token) ;
+	   for (uint8_t i = 0; i < 7; i++) {
+	   if (Name[i] == 0) {
+		Name[i] = 0x20 ;
 		}
-	      while(token != NULL){
-	      tempToken = token ;
-	      token = strtok(NULL, s);
-	      if (token == 0) {
-			memcpy(Extension ,tempToken, 3) ;
-	      cnt += 1 ;
-	      }
-	   }
+	}
+	  while(token != NULL){
+	  tempToken = token ;
+	  token = strtok(NULL, s);
+	  if (token == 0) {
+		memcpy(Extension ,tempToken, 3) ;
+	  }
+   }
 	// form the final string which is DOS compatible
 	      memcpy(DOSName , Name , 7) ;
 	      memcpy(&DOSName[8], Extension, 3) ;
@@ -157,12 +155,22 @@ void readFile(fsfat32_t *fsfat32 , uint8_t *SD_BUFFER ,char fileName[11] , uint8
 		if (DirEntry.DIR_Name[0] != 0xE5) {
 			if (strcmp(DirEntry.DIR_Name , DOSName)== 0) {
 				printf("match found for: %s\n" , DOSName ) ;
+				// save the file's data to clusfat
+
+				fsfat32->clusfat.fileStartCluster |= DirEntry.DIR_FstClusLO << 0 ;
+				fsfat32->clusfat.fileStartCluster |= DirEntry.DIR_FstClusLO << 16 ;
+
+				fsfat32->clusfat.fileStartSector = (((fsfat32->clusfat.fileStartSector) - 2)
+													* fsfat32->BPB.BPB_SectorPerCluster ) + fsfat32->firstDatasector;
+
+				fsfat32->clusfat.fileSize = DirEntry.DIR_FileSize ;
+
+
 				return ;
 			}
 			printf("file name is : %s \n" , DirEntry.DIR_Name) ;
-				}
-
-	}
+		}
+	 }
   }
 
  /* once the dir entries of cluster 2 have been fetched we
@@ -191,6 +199,14 @@ void readFile(fsfat32_t *fsfat32 , uint8_t *SD_BUFFER ,char fileName[11] , uint8
 				if (strcmp(DirEntry.DIR_Name , DOSName)== 0) {
 					printf("match found for: %s\n" , DOSName ) ;
 
+					fsfat32->clusfat.fileStartCluster |= DirEntry.DIR_FstClusLO << 0 ;
+					fsfat32->clusfat.fileStartCluster |= DirEntry.DIR_FstClusLO << 16 ;
+
+					fsfat32->clusfat.fileStartSector= (((fsfat32->clusfat.fileStartSector) - 2)
+													* fsfat32->BPB.BPB_SectorPerCluster ) + fsfat32->firstDatasector;
+
+					fsfat32->clusfat.fileSize = DirEntry.DIR_FileSize ;
+
 					return ;
 				}
 				printf("file name is : %s \n" , DirEntry.DIR_Name) ;
@@ -201,3 +217,16 @@ void readFile(fsfat32_t *fsfat32 , uint8_t *SD_BUFFER ,char fileName[11] , uint8
 	 mapClusterToFat(fsfat32, fsfat32->clusfat.FAT32ClusEntryVal, SD_BUFFER) ;
    }
 }
+
+
+void getFileData(fsfat32_t *fsfat32 ,uint8_t *SD_BUFFER ,uint8_t Next) {
+
+
+}
+
+
+
+
+
+
+
