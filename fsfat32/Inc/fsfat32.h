@@ -42,6 +42,9 @@ uint8_t fatType ;
 #define FAT_TYPE_16		16
 #define FAT_TYPE_12		12
 
+#define FULL_FILE_SIZE   (fsfat32.clusfat.fileSize)
+
+
 typedef struct {
 uint8_t BS_jumpBoot [3];
 uint8_t BS_OEMName [8] ;
@@ -109,6 +112,6 @@ void fsfat32_Init(fsfat32_t *fsfat32, uint8_t * SD_BUFFER);
 void getFatType(fsfat32_t *fsfat32);
 void mapClusterToFat(fsfat32_t *fsfat32 , uint32_t clusterNumber ,uint8_t * SD_BUFFER);
 void readFile(fsfat32_t *fsfat32 , uint8_t *SD_BUFFER ,char fileName[11], uint8_t Next);
-void getFileData(fsfat32_t *fsfat32 , uint8_t *SD_BUFFER , uint8_t Next ) ;
+void getFileData(fsfat32_t *fsfat32 , uint8_t *SD_BUFFER , void (*dataProcessor)(uint8_t *SD_BUFFER), uint32_t DataSize) ;
 
 #endif /* INC_FSFAT32_H_ */

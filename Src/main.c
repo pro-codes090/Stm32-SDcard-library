@@ -68,7 +68,9 @@ void SPI2_Inits(void)
 	SPI_Init(&SPI2handle);
 }
 
-
+void DATA_PROCESSOR_DEFAULT(uint8_t *SD_BUFFER){
+printf("%s \n " , SD_BUFFER) ;
+}
 int main (void ){
 	uint8_t SD_BUFFER [514] ;	// last two bytes are for CRC and do not belong to thw data in the sector
 
@@ -88,7 +90,10 @@ int main (void ){
     fsfat32_t fsfat32 ;
 	fsfat32_Init(&fsfat32, SD_BUFFER ) ;
 
-	readFile(&fsfat32, SD_BUFFER, "DEV(14).TXT", 1)  ;
+	readFile(&fsfat32, SD_BUFFER, "BRO(5).TXT", 1)  ;
+
+	getFileData(&fsfat32, SD_BUFFER, DATA_PROCESSOR_DEFAULT, FULL_FILE_SIZE) ;
+
 
 	while(1);
 

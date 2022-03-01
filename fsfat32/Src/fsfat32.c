@@ -221,10 +221,27 @@ void readFile(fsfat32_t *fsfat32 , uint8_t *SD_BUFFER ,char fileName[11] , uint8
 }
 
 
-void getFileData(fsfat32_t *fsfat32 ,uint8_t *SD_BUFFER ,uint8_t Next) {
-	// fetch the data at the start of the sector
+void getFileData(fsfat32_t *fsfat32 ,uint8_t *SD_BUFFER , void (*dataProcessor)(uint8_t *SD_BUFFER) , uint32_t DataSize) {
+	fsfat32->FileReadComplete = 0 ;
+	uint32_t blocksizeRead = 0 ;
+	while(!fsfat32->FileReadComplete){
+		for (uint8_t i= 0; i < fsfat32->BPB.BPB_SectorPerCluster; i++) {
+			memset(SD_BUFFER ,0, 512);
+			readBlockSingle(((((fsfat32->clusfat.fileStartCluster - 2 )*fsfat32->BPB.BPB_SectorPerCluster ) + fsfat32->firstDatasector )+ i), SD_BUFFER) ;
+			dataProcessor(SD_BUFFER) ;
+			blocksizeRead += 512 ;
+		}
+		mapClusterToFat(fsfat32, fsfat32->clusfat.fileStartCluster, SD_BUFFER) ;
+		fsfat32->clusfat.fileStartCluster = fsfat32->clusfat.FAT32ClusEntryVal ;
+		if (fsfat32->clusfat.FAT32ClusEntryVal == 0x0FFFFFFF) {
+			fsfat32->FileReadComplete = 1 ;
+			printf("fileSize reached : %u \n" , blocksizeRead) ;
+		}else if(blocksizeRead >= DataSize){
+			fsfat32->FileReadComplete = 1 ;
+			printf("blockSize reached DataSize : %u \n" , blocksizeRead) ;
+		}
 
-
+	}
 
 }
 
