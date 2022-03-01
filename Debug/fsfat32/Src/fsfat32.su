@@ -4,4 +4,4 @@ fsfat32.c:30:6:getRootDirectory	16	static
 fsfat32.c:37:6:getFatType	32	static
 fsfat32.c:76:6:mapClusterToFat	40	static
 fsfat32.c:106:6:readFile	136	static
-fsfat32.c:222:6:getFileData	24	static
+fsfat32.c:225:6:getFileData	24	static

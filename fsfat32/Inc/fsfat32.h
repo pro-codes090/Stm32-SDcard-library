@@ -88,7 +88,7 @@ uint8_t FileWriteComplete ;
 
 
 typedef struct {
-char DIR_Name[12] ;
+char DIR_Name[11] ;
 uint8_t DIR_Attr ;
 uint8_t DIR_NTRes ;
 uint8_t DIR_CrtTimeTenth;

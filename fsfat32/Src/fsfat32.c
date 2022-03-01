@@ -142,33 +142,34 @@ void readFile(fsfat32_t *fsfat32 , uint8_t *SD_BUFFER ,char fileName[11] , uint8
 	      printf("DOS NAME IS %s \n" , DOSName) ;
 
 	Dir_Entry_t DirEntry ;
-
+	char DIR_Name[12] = "FILENAME.TXT" ;	// dummy name
  for (uint8_t i = 0;  i < fsfat32->BPB.BPB_SectorPerCluster ; i++) {
 	readBlockSingle(fsfat32->firstDatasector + i, SD_BUFFER) ;			// for every block in a sector (8 ideally)
 
 	for (uint8_t i = 0; i < 16; i++) {			// for every directory entry i.e 16 in a block
 		// map dir entry with sd buffer
 		memcpy(&DirEntry , &SD_BUFFER[(i*32)] , sizeof(DirEntry)) ;
-		DirEntry.DIR_Name[11] = '\0' ;
+		memcpy(DIR_Name , DirEntry.DIR_Name , 12) ;
+		DIR_Name[11] = '\0' ;
 
 		// compare the names and exclude the deleted entries
 		if (DirEntry.DIR_Name[0] != 0xE5) {
-			if (strcmp(DirEntry.DIR_Name , DOSName)== 0) {
+			if (strcmp(DIR_Name , DOSName)== 0) {
 				printf("match found for: %s\n" , DOSName ) ;
 				// save the file's data to clusfat
+				fsfat32->clusfat.fileStartCluster = 0;
 
 				fsfat32->clusfat.fileStartCluster |= DirEntry.DIR_FstClusLO << 0 ;
-				fsfat32->clusfat.fileStartCluster |= DirEntry.DIR_FstClusLO << 16 ;
-
-				fsfat32->clusfat.fileStartSector = (((fsfat32->clusfat.fileStartSector) - 2)
+				fsfat32->clusfat.fileStartCluster |= DirEntry.DIR_FstClusHI << 16 ;
+				fsfat32->clusfat.fileStartSector = 0 ;
+				fsfat32->clusfat.fileStartSector = (((fsfat32->clusfat.fileStartCluster) - 2)
 													* fsfat32->BPB.BPB_SectorPerCluster ) + fsfat32->firstDatasector;
-
+				fsfat32->clusfat.fileSize = 0 ;
 				fsfat32->clusfat.fileSize = DirEntry.DIR_FileSize ;
-
 
 				return ;
 			}
-			printf("file name is : %s \n" , DirEntry.DIR_Name) ;
+			printf("file name is : %s \n" , DIR_Name) ;
 		}
 	 }
   }
@@ -192,11 +193,12 @@ void readFile(fsfat32_t *fsfat32 , uint8_t *SD_BUFFER ,char fileName[11] , uint8
 		for (uint8_t i = 0; i < 16; i++) {			// for every directory entry i.e 16 in a block
 			// map dir entry with sd buffer
 			memcpy(&DirEntry , &SD_BUFFER[(i*32)] , sizeof(DirEntry)) ;
-			DirEntry.DIR_Name[11] = '\0' ;
+			memcpy(DIR_Name , DirEntry.DIR_Name , 12) ;
+			DIR_Name[11] = '\0' ;
 
 			// compare the names and exclude the deleted entries
 			if (DirEntry.DIR_Name[0] != 0xE5) {
-				if (strcmp(DirEntry.DIR_Name , DOSName)== 0) {
+				if (strcmp(DIR_Name , DOSName)== 0) {
 					printf("match found for: %s\n" , DOSName ) ;
 
 					fsfat32->clusfat.fileStartCluster |= DirEntry.DIR_FstClusLO << 0 ;
@@ -209,7 +211,7 @@ void readFile(fsfat32_t *fsfat32 , uint8_t *SD_BUFFER ,char fileName[11] , uint8
 
 					return ;
 				}
-				printf("file name is : %s \n" , DirEntry.DIR_Name) ;
+				printf("file name is : %s \n" , DIR_Name) ;
 			}
 
 		}
@@ -220,6 +222,8 @@ void readFile(fsfat32_t *fsfat32 , uint8_t *SD_BUFFER ,char fileName[11] , uint8
 
 
 void getFileData(fsfat32_t *fsfat32 ,uint8_t *SD_BUFFER ,uint8_t Next) {
+	// fetch the data at the start of the sector
+
 
 
 }
