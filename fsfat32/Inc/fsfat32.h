@@ -106,12 +106,13 @@ uint32_t DIR_FileSize ;
 }__attribute__((__packed__))Dir_Entry_t;
 
 
-void readBPB( fsfat32_t * fsfat32, uint8_t * SD_BUFFER);
-void getRootDirectory(fsfat32_t *fsfat32);
+
 void fsfat32_Init(fsfat32_t *fsfat32, uint8_t * SD_BUFFER);
-void getFatType(fsfat32_t *fsfat32);
-void mapClusterToFat(fsfat32_t *fsfat32 , uint32_t clusterNumber ,uint8_t * SD_BUFFER);
 void readFile(fsfat32_t *fsfat32 , uint8_t *SD_BUFFER ,char fileName[11], uint8_t Next);
 void getFileData(fsfat32_t *fsfat32 , uint8_t *SD_BUFFER , void (*dataProcessor)(uint8_t *SD_BUFFER), uint32_t DataSize) ;
+//static void readBPB( fsfat32_t * fsfat32, uint8_t * SD_BUFFER);
+//void getRootDirectory(fsfat32_t *fsfat32);
+//void getFatType(fsfat32_t *fsfat32);
+//void mapClusterToFat(fsfat32_t *fsfat32 , uint32_t clusterNumber ,uint8_t * SD_BUFFER);B
 
 #endif /* INC_FSFAT32_H_ */

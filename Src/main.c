@@ -10,11 +10,14 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
+#include "Config.h"
 #include "stm32f407xx.h"
 #include "stm32f407xx_gpio_driver.h"
 #include "stm32f407xx_spi_driver.h"
 #include "stm32_SDcard.h"
 #include "fsfat32.h"
+
+
 
 void SPI2_GPIOInits(void)
 {
@@ -69,7 +72,7 @@ void SPI2_Inits(void)
 }
 
 void DATA_PROCESSOR_DEFAULT(uint8_t *SD_BUFFER){
-printf("%s \n " , SD_BUFFER) ;
+printf("%s\n" , SD_BUFFER) ;
 }
 int main (void ){
 	uint8_t SD_BUFFER [514] ;	// last two bytes are for CRC and do not belong to thw data in the sector
@@ -90,10 +93,9 @@ int main (void ){
     fsfat32_t fsfat32 ;
 	fsfat32_Init(&fsfat32, SD_BUFFER ) ;
 
-	readFile(&fsfat32, SD_BUFFER, "BRO(5).TXT", 1)  ;
+	readFile(&fsfat32, SD_BUFFER, "DEV(1).TXT", 1)  ;
 
 	getFileData(&fsfat32, SD_BUFFER, DATA_PROCESSOR_DEFAULT, FULL_FILE_SIZE) ;
-
 
 	while(1);
 

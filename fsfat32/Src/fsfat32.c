@@ -1,21 +1,10 @@
+#include "Config.h"
 #include "stm32_SDcard.h"
 #include "fsfat32.h"
-
-void fsfat32_Init(fsfat32_t *fsfat32, uint8_t * SD_BUFFER){
-
-	readBPB(fsfat32,SD_BUFFER) ;
-
-	getRootDirectory(fsfat32) ;
-
-	getFatType(fsfat32) ;
-
-}
-
-void readBPB( fsfat32_t * fsfat32, uint8_t * SD_BUFFER){
-
+static void readBPB( fsfat32_t * fsfat32, uint8_t * SD_BUFFER){
 	readBlockSingle(0x00000000 , SD_BUFFER) ;
-
 	memcpy(&fsfat32->BPB , SD_BUFFER , sizeof(fsfat32->BPB)) ;
+#if (FAT_DEV_MODE )
 	printf(" bytes per sector  %d \n" , fsfat32->BPB.BPB_BytesPerSector) ;
 	printf("sector per cluster %d \n" , fsfat32->BPB.BPB_SectorPerCluster) ;
 	printf("reserved sec count %d \n" , fsfat32->BPB.BPB_ReservedSectorCount) ;
@@ -24,27 +13,28 @@ void readBPB( fsfat32_t * fsfat32, uint8_t * SD_BUFFER){
 	printf("Root cluster       %u \n" , fsfat32->BPB.BPB_RootClus) ;
 	printf("BPB To Sec 32      %u \n" , fsfat32->BPB.BPB_ToSec32) ;
 	printf("size of each fat   %u \n" , fsfat32->BPB.BPB_FATSz32) ;
-
+#endif
 }
 
-void getRootDirectory(fsfat32_t *fsfat32){
-
+static void getRootDirectory(fsfat32_t *fsfat32){
 	fsfat32->RootDirSectors = ((fsfat32->BPB.BPB_RootEntCnt * 32) + (fsfat32->BPB.BPB_BytesPerSector - 1 )) / fsfat32->BPB.BPB_BytesPerSector ;
+#if (FAT_DEV_MODE )
      printf(" root dir count %u \n" , fsfat32->RootDirSectors) ;
-
+#endif
 }
 
-void getFatType(fsfat32_t *fsfat32){
+static void getFatType(fsfat32_t *fsfat32){
 	uint32_t FATSz ;
 	if(fsfat32->BPB.BPB_FTASz16 != 0){
 	    FATSz = fsfat32->BPB.BPB_FTASz16  ;
 	}else{
 	FATSz = fsfat32->BPB.BPB_FATSz32 ;
 	}
-
 	fsfat32->firstDatasector = ( fsfat32->BPB.BPB_ReservedSectorCount + (fsfat32->BPB.BPB_NumberOfFats* FATSz) + fsfat32->RootDirSectors ) ;
-	printf(" first data sector %u \n" , fsfat32->firstDatasector ) ;
 
+#if (FAT_DEV_MODE )
+	printf(" first data sector %u \n" , fsfat32->firstDatasector ) ;
+#endif
 	// determine the fat type
 	uint32_t totsec = 0 ;
 	if (fsfat32->BPB.BPB_ToSec16!= 0) {
@@ -59,21 +49,29 @@ void getFatType(fsfat32_t *fsfat32){
 	 if(CountofClusters < 4085) {
 	 /* Volume is FAT12 */
 		 fsfat32->fatType = FAT_TYPE_12 ;
+
+#if (FAT_DEV_MODE )
 		 printf("volume is fat 12 %u \n" , CountofClusters) ;
+#endif
 	 } else if(CountofClusters < 65525) {
 	     /* Volume is FAT16 */
 		 fsfat32->fatType  = FAT_TYPE_16 ;
+
+#if (FAT_DEV_MODE )
 		 printf("volume is fat 16 %u \n" , CountofClusters) ;
+#endif
 	 } else {
 	     /* Volume is FAT32 */
 		 fsfat32->fatType = FAT_TYPE_32 ;
-		 printf("volume is fat 32 %u \n" , CountofClusters) ;
 
-	 }
+#if (FAT_DEV_MODE )
+		 printf("volume is fat 32 %u \n" , CountofClusters) ;
+#endif
+	}
 }
 
 
-void mapClusterToFat(fsfat32_t *fsfat32 , uint32_t clusterNumber ,uint8_t * SD_BUFFER){
+static void mapClusterToFat(fsfat32_t *fsfat32 , uint32_t clusterNumber ,uint8_t * SD_BUFFER){
 uint32_t FATOffset = 0 ;
 uint32_t ThisFATEntOffset = 0 ;
 uint32_t ThisFatSecNum = 0 ;
@@ -84,15 +82,16 @@ fsfat32->clusfat.FAT32ClusEntryVal = 0 ;
 	else if (fsfat32->fatType == FAT_TYPE_32){
 	    FATOffset = clusterNumber * 4;
 	}
-
+\
 	ThisFatSecNum = fsfat32->BPB.BPB_ReservedSectorCount + (FATOffset / fsfat32->BPB.BPB_BytesPerSector);
 	ThisFATEntOffset = (FATOffset % fsfat32->BPB.BPB_BytesPerSector);
 
 	readBlockSingle(ThisFatSecNum, SD_BUFFER) ;
 
+#if (FAT_DEV_MODE )
 	 printf("ThisFATEntOffset is : %d \n " , ThisFATEntOffset) ;
 	 printf("ThisFatSecNum is : %d \n " , ThisFatSecNum) ;
-
+#endif
 	 fsfat32->clusfat.FAT32ClusEntryVal |= ( (SD_BUFFER[ThisFATEntOffset] << 0) );
 	 fsfat32->clusfat.FAT32ClusEntryVal |= ( (SD_BUFFER[ThisFATEntOffset + 1] << 8) );
 	 fsfat32->clusfat.FAT32ClusEntryVal |= ( (SD_BUFFER[ThisFATEntOffset + 2] << 16) );
@@ -100,11 +99,24 @@ fsfat32->clusfat.FAT32ClusEntryVal = 0 ;
 
 	 fsfat32->clusfat.FAT32ClusEntryVal &= 0x0FFFFFFF ;
 
+#if (FAT_DEV_MODE )
 	 printf("cluster number calculated from ThisFATEntOffset  is : %d \n " , fsfat32->clusfat.FAT32ClusEntryVal ) ;
+#endif
 }
 
+
+void fsfat32_Init(fsfat32_t *fsfat32, uint8_t * SD_BUFFER){
+	readBPB(fsfat32,SD_BUFFER) ;
+	getRootDirectory(fsfat32) ;
+	getFatType(fsfat32) ;
+}
+
+
 void readFile(fsfat32_t *fsfat32 , uint8_t *SD_BUFFER ,char fileName[11] , uint8_t Next){
+
+#if (FAT_DEV_MODE )
 	printf("file to search : %s \n" , fileName );
+#endif
 	char Name [7] ="" ;
 	memset(Name , 0x20 , 7) ;
 	char Extension[3] ="" ;
@@ -120,8 +132,7 @@ void readFile(fsfat32_t *fsfat32 , uint8_t *SD_BUFFER ,char fileName[11] , uint8
 	   /* get the first token */
 	   token = strtok(str, s);
 	   /* walk through other tokens */
-//	   printf( "cnt is : %d\n", cnt);
-	   printf( " %s\n", token );
+//       printf( " %s\n", token );
 	   strcpy(Name ,token) ;
 	   for (uint8_t i = 0; i < 7; i++) {
 	   if (Name[i] == 0) {
@@ -139,8 +150,10 @@ void readFile(fsfat32_t *fsfat32 , uint8_t *SD_BUFFER ,char fileName[11] , uint8
 	      memcpy(DOSName , Name , 7) ;
 	      memcpy(&DOSName[8], Extension, 3) ;
 	      DOSName[11] = '\0' ;
-	      printf("DOS NAME IS %s \n" , DOSName) ;
 
+#if (FAT_DEV_MODE )
+	      printf("DOS NAME IS %s \n" , DOSName) ;
+#endif
 	Dir_Entry_t DirEntry ;
 	char DIR_Name[12] = "FILENAME.TXT" ;	// dummy name
  for (uint8_t i = 0;  i < fsfat32->BPB.BPB_SectorPerCluster ; i++) {
@@ -155,7 +168,10 @@ void readFile(fsfat32_t *fsfat32 , uint8_t *SD_BUFFER ,char fileName[11] , uint8
 		// compare the names and exclude the deleted entries
 		if (DirEntry.DIR_Name[0] != 0xE5) {
 			if (strcmp(DIR_Name , DOSName)== 0) {
+
+#if (FAT_DEV_MODE )
 				printf("match found for: %s\n" , DOSName ) ;
+#endif
 				// save the file's data to clusfat
 				fsfat32->clusfat.fileStartCluster = 0;
 
@@ -169,7 +185,9 @@ void readFile(fsfat32_t *fsfat32 , uint8_t *SD_BUFFER ,char fileName[11] , uint8
 
 				return ;
 			}
+#if (FAT_DEV_MODE )
 			printf("file name is : %s \n" , DIR_Name) ;
+#endif
 		}
 	 }
   }
@@ -199,8 +217,10 @@ void readFile(fsfat32_t *fsfat32 , uint8_t *SD_BUFFER ,char fileName[11] , uint8
 			// compare the names and exclude the deleted entries
 			if (DirEntry.DIR_Name[0] != 0xE5) {
 				if (strcmp(DIR_Name , DOSName)== 0) {
-					printf("match found for: %s\n" , DOSName ) ;
 
+				#if (FAT_DEV_MODE )
+					printf("match found for: %s\n" , DOSName ) ;
+				#endif
 					fsfat32->clusfat.fileStartCluster |= DirEntry.DIR_FstClusLO << 0 ;
 					fsfat32->clusfat.fileStartCluster |= DirEntry.DIR_FstClusLO << 16 ;
 
@@ -210,15 +230,17 @@ void readFile(fsfat32_t *fsfat32 , uint8_t *SD_BUFFER ,char fileName[11] , uint8
 					fsfat32->clusfat.fileSize = DirEntry.DIR_FileSize ;
 
 					return ;
-				}
-				printf("file name is : %s \n" , DIR_Name) ;
-			}
+			 }
 
+				#if (FAT_DEV_MODE )
+			 printf("file name is : %s \n" , DIR_Name) ;
+				#endif
+		  }
 		}
 	  }
 	 mapClusterToFat(fsfat32, fsfat32->clusfat.FAT32ClusEntryVal, SD_BUFFER) ;
    }
-}
+ }
 
 
 void getFileData(fsfat32_t *fsfat32 ,uint8_t *SD_BUFFER , void (*dataProcessor)(uint8_t *SD_BUFFER) , uint32_t DataSize) {
@@ -235,19 +257,15 @@ void getFileData(fsfat32_t *fsfat32 ,uint8_t *SD_BUFFER , void (*dataProcessor)(
 		fsfat32->clusfat.fileStartCluster = fsfat32->clusfat.FAT32ClusEntryVal ;
 		if (fsfat32->clusfat.FAT32ClusEntryVal == 0x0FFFFFFF) {
 			fsfat32->FileReadComplete = 1 ;
+
+				#if (FAT_DEV_MODE)
 			printf("fileSize reached : %u \n" , blocksizeRead) ;
+				#endif
 		}else if(blocksizeRead >= DataSize){
 			fsfat32->FileReadComplete = 1 ;
+				#if (FAT_DEV_MODE)
 			printf("blockSize reached DataSize : %u \n" , blocksizeRead) ;
+				#endif
 		}
-
 	}
-
 }
-
-
-
-
-
-
-

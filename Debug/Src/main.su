@@ -1,4 +1,4 @@
-main.c:19:6:SPI2_GPIOInits	24	static
-main.c:55:6:SPI2_Inits	40	static
-main.c:71:6:DATA_PROCESSOR_DEFAULT	16	static
-main.c:74:5:main	608	static
+main.c:22:6:SPI2_GPIOInits	24	static
+main.c:58:6:SPI2_Inits	40	static
+main.c:74:6:DATA_PROCESSOR_DEFAULT	16	static
+main.c:77:5:main	608	static

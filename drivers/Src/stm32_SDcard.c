@@ -4,9 +4,8 @@
  *  Created on: 29-Jan-2022
  *      Author: pro
  */
-
+#include "Config.h"
 #include "stm32_SDcard.h"
-
 
 void deselectSDcard(){GPIO_WriteToOutputPin(GPIOB, GPIO_PIN_NO_10, SET);}
 void selectSDcard(){GPIO_WriteToOutputPin(GPIOB, GPIO_PIN_NO_10, RESET);}
@@ -44,7 +43,9 @@ static void sdPowerUp(){
 	while (R1_Response != 0x01) {
 	SPI_Send(SPI2, &dummyByte, 1) ;
 	SPI_Read(SPI2, &R1_Response, 1) ;
+#if (SD_DEV_MODE)
 	printf("%d\n" , R1_Response) ;
+#endif
 	}
 
 	SPI_Send(SPI2, &dummyByte, 1) ;
@@ -52,15 +53,18 @@ static void sdPowerUp(){
 	for (uint16_t i = 0;  i < 1000; i++) {}
 	deselectSDcard();
 	SPI_Send(SPI2, &dummyByte, 1) ;
+#if (SD_DEV_MODE)
 		printf("CMD0 r1 ideal \n") ;
-
+#endif
 }
 
 static void sdInitSeq(){
 	uint8_t Data [] = {0xff ,0xff ,0xff ,0xff ,0xff ,0xff ,0xff ,0xff ,0xff ,0xff ,} ;
 	uint8_t dummyByte = 0xff ;
 	uint8_t res7 = 0 ;
+#if (SD_DEV_MODE)
 	printf("CMD8 \n ") ;
+#endif
 	Data[0] = 0x48 ;
 	Data[1] = 0x00 ;
 	Data[2] = 0x00 ;
@@ -78,26 +82,39 @@ static void sdInitSeq(){
 
 	SPI_Send(SPI2, &dummyByte, 1) ;
 	SPI_Read(SPI2, &res7, 1) ;
+#if (SD_DEV_MODE)
 	printf("1 %p \n" , res7) ;
+#endif
 	SPI_Send(SPI2, &dummyByte, 1) ;
 	SPI_Read(SPI2, &res7, 1) ;
+#if (SD_DEV_MODE)
 	printf("2 %p \n" , res7) ;
+#endif
 	SPI_Send(SPI2, &dummyByte, 1) ;
 	SPI_Read(SPI2, &res7, 1) ;
+#if (SD_DEV_MODE)
 	printf("3 %p \n" , res7) ;
+#endif
 	SPI_Send(SPI2, &dummyByte, 1) ;
 	SPI_Read(SPI2, &res7, 1) ;
+#if (SD_DEV_MODE)
 	printf("4 %p \n" , res7) ;
+#endif
 	SPI_Send(SPI2, &dummyByte, 1) ;
 	SPI_Read(SPI2, &res7, 1) ;
+#if (SD_DEV_MODE)
 	printf("5 %p \n" , res7) ;
+#endif
 	SPI_Send(SPI2, &dummyByte, 1) ;
 	SPI_Read(SPI2, &res7, 1) ;
+#if (SD_DEV_MODE)
 	printf("6 %p \n" , res7) ;
+#endif
 	SPI_Send(SPI2, &dummyByte, 1) ;
 	SPI_Read(SPI2, &res7, 1) ;
+#if (SD_DEV_MODE)
 	printf("7 %p \n" , res7) ;
-
+#endif
 	// delay some time
 	for (uint16_t i = 0;  i < 1000; i++) {}
 	deselectSDcard();
@@ -110,7 +127,9 @@ static void readOCR() {
 	uint8_t dummyByte = 0xff ;
 
 uint8_t res3 ;
+#if (SD_DEV_MODE)
 	printf("CMD58 \n ") ;
+#endif
 	Data[0] = 0x7A ;
 	Data[1] = 0x00 ;
 	Data[2] = 0x00 ;
@@ -128,26 +147,39 @@ uint8_t res3 ;
 
 	SPI_Send(SPI2, &dummyByte, 1) ;
 	SPI_Read(SPI2, &res3, 1) ;
+#if (SD_DEV_MODE)
 	printf("1 %p \n" , res3) ;
+#endif
 	SPI_Send(SPI2, &dummyByte, 1) ;
 	SPI_Read(SPI2, &res3, 1) ;
+#if (SD_DEV_MODE)
 	printf("2 %p \n" , res3) ;
+#endif
 	SPI_Send(SPI2, &dummyByte, 1) ;
 	SPI_Read(SPI2, &res3, 1) ;
+#if (SD_DEV_MODE)
 	printf("3 %p \n" , res3) ;
+#endif
 	SPI_Send(SPI2, &dummyByte, 1) ;
 	SPI_Read(SPI2, &res3, 1) ;
+#if (SD_DEV_MODE)
 	printf("4 %p \n" , res3) ;
+#endif
 	SPI_Send(SPI2, &dummyByte, 1) ;
 	SPI_Read(SPI2, &res3, 1) ;
+#if (SD_DEV_MODE)
 	printf("5 %p \n" , res3) ;
+#endif
 	SPI_Send(SPI2, &dummyByte, 1) ;
 	SPI_Read(SPI2, &res3, 1) ;
+#if (SD_DEV_MODE)
 	printf("6 %p \n" , res3) ;
+#endif
 	SPI_Send(SPI2, &dummyByte, 1) ;
 	SPI_Read(SPI2, &res3, 1) ;
+#if (SD_DEV_MODE)
 	printf("7 %p \n" , res3) ;
-
+#endif
 	// delay some time
 	for (uint16_t i = 0;  i < 1000; i++) {}
 	deselectSDcard();
@@ -179,8 +211,9 @@ static void sd_final_Init(){
 
 uint8_t res1 = 0xff ;
 while(res1 != 0x00){
-
+#if (SD_DEV_MODE)
 printf("CMD55 \n") ;
+#endif
 Data[0] = 	0x77 ;
 Data[1] = 	0x00 ;
 Data[2] = 	0x00 ;
@@ -199,20 +232,22 @@ SPI_Send(SPI2, Data, 6);
 
 SPI_Send(SPI2, &dummyByte, 1) ;
 SPI_Read(SPI2, &res1, 1) ;
+#if (SD_DEV_MODE)
 printf("1 %p \n" , res1) ;
-
+#endif
 SPI_Send(SPI2, &dummyByte, 1) ;
 SPI_Read(SPI2, &res1, 1) ;
+#if (SD_DEV_MODE)
 printf("1 %p \n" , res1) ;
-
-
+#endif
 SPI_Send(SPI2, &dummyByte, 1) ;
 // delay some time
 for (uint16_t i = 0;  i < 1000; i++) {}
 deselectSDcard();
 SPI_Send(SPI2, &dummyByte, 1) ;
-
+#if (SD_DEV_MODE)
 printf("ACMD41 \n") ;
+#endif
 Data[0] = 	0x69 ;
 Data[1] = 	0x40 ;
 Data[2] = 	0x00 ;
@@ -231,21 +266,23 @@ SPI_Send(SPI2, Data, 6);
 
 SPI_Send(SPI2, &dummyByte, 1) ;
 SPI_Read(SPI2, &res1, 1) ;
+#if (SD_DEV_MODE)
 printf("1 %p \n" , res1) ;
-
+#endif
 SPI_Send(SPI2, &dummyByte, 1) ;
 SPI_Read(SPI2, &res1, 1) ;
+#if (SD_DEV_MODE)
 printf("1 %p \n" , res1) ;
-
-
+#endif
 SPI_Send(SPI2, &dummyByte, 1) ;
 // delay some time
 for (uint16_t i = 0;  i < 1000; i++) {}
 deselectSDcard();
 SPI_Send(SPI2, &dummyByte, 1) ;
-
   }
+#if (SD_DEV_MODE)
 printf("Init Success \n ") ;
+#endif
 }
 
 static void prepReadWrite(){
@@ -273,7 +310,9 @@ void readBlockSingle(uint32_t blockIndex , uint8_t *buffAddr){
 	uint8_t dummyByte = 0xff ;
 	uint8_t dummyReadByte = 0xff ;
 uint8_t res1 = 0xff ;
+#if (SD_DEV_MODE)
 	printf("CMD17\n") ;
+#endif
 	Data[0] = 	0x51 ;
 	Data[1] = 	(blockIndex >> 24) ;
 	Data[2] = 	(blockIndex >> 16) ;
@@ -291,12 +330,14 @@ uint8_t res1 = 0xff ;
 
 	SPI_Send(SPI2, &dummyByte, 1) ;
 	SPI_Read(SPI2, &res1, 1) ;
+#if (SD_DEV_MODE)
 	printf("1 %p \n" , res1) ;
-
+#endif
 	SPI_Send(SPI2, &dummyByte, 1) ;
 	SPI_Read(SPI2, &res1, 1) ;
+#if (SD_DEV_MODE)
 	printf("1 %p \n" , res1) ;
-
+#endif
 	for (uint16_t j = 0; j < 515; j++) {
 		SPI_Send(SPI2, &dummyByte, 1) ;
 		SPI_Read(SPI2, &dummyReadByte, 1) ; // dummy reaad
@@ -305,13 +346,21 @@ uint8_t res1 = 0xff ;
 		SPI_Send(SPI2, &dummyByte, 1) ;
 		SPI_Read(SPI2, buffAddr, 1) ; // dummy read
 		if (i == 510) {
+#if (SD_DEV_MODE)
 			printf("1 signature is %p \n" , *buffAddr) ;
+#endif
 		}else if (i == 511) {
+#if (SD_DEV_MODE)
 			printf("2 signature is %p \n" , *buffAddr) ;
+#endif
 		}else if (i == 512) {
+#if (SD_DEV_MODE)
 			printf("2 CRC is %p \n" , *buffAddr) ;
+#endif
 		}else if (i == 513) {
+#if (SD_DEV_MODE)
 			printf("2 CRC is %p \n" ,*buffAddr) ;
+#endif
 			return ;
 		}
 
@@ -333,7 +382,9 @@ void writeBlockSingle(uint32_t blockIndex , uint8_t *buffAddr){
 	uint8_t dummyByte = 0xff ;
 	uint8_t dummyReadByte = 0xff ;
 	uint8_t res1 = 0xff ;
+#if (SD_DEV_MODE)
 	printf("CMD24\n") ;
+#endif
 	Data[0] = 	0x58 ;
 	Data[1] = 	(blockIndex >> 24) ;
 	Data[2] = 	(blockIndex >> 16) ;
@@ -351,12 +402,14 @@ void writeBlockSingle(uint32_t blockIndex , uint8_t *buffAddr){
 
 	SPI_Send(SPI2, &dummyByte, 1) ;
 	SPI_Read(SPI2, &res1, 1) ;
+#if (SD_DEV_MODE)
 	printf("1 %p \n" , res1) ;
-
+#endif
 	SPI_Send(SPI2, &dummyByte, 1) ;
 	SPI_Read(SPI2, &res1, 1) ;
+#if (SD_DEV_MODE)
 	printf("1 %p \n" , res1) ;
-
+#endif
 		if (res1 == 0) {
 		dummyByte = 0xFE ;
 		SPI_Send(SPI2, &dummyByte, 1) ;
