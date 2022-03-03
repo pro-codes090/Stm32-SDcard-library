@@ -1,0 +1,7 @@
+fsfat32.c:4:13:readBPB	16	static
+fsfat32.c:19:13:getRootDirectory	16	static
+fsfat32.c:26:13:getFatType	32	static
+fsfat32.c:74:13:mapClusterToFat	40	static
+fsfat32.c:108:6:fsfat32_Init	16	static
+fsfat32.c:115:6:readFile	136	static
+fsfat32.c:246:6:getFileData	32	static

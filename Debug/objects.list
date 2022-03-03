@@ -5,3 +5,4 @@
 "./drivers/Src/stm32_SDcard.o"
 "./drivers/Src/stm32f407XX_spi_driver.o"
 "./drivers/Src/stm32f407xx_gpio_driver.o"
+"./fsfat32/Src/fsfat32.o"

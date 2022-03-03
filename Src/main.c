@@ -10,10 +10,14 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
+#include "Config.h"
 #include "stm32f407xx.h"
 #include "stm32f407xx_gpio_driver.h"
 #include "stm32f407xx_spi_driver.h"
 #include "stm32_SDcard.h"
+#include "fsfat32.h"
+
+
 
 void SPI2_GPIOInits(void)
 {
@@ -67,9 +71,12 @@ void SPI2_Inits(void)
 	SPI_Init(&SPI2handle);
 }
 
-
-
+void DATA_PROCESSOR_DEFAULT(uint8_t *SD_BUFFER){
+printf("%s\n" , SD_BUFFER) ;
+}
 int main (void ){
+	uint8_t SD_BUFFER [514] ;	// last two bytes are for CRC and do not belong to thw data in the sector
+
 	printf("application running \n") ;
 
 	SPI2_GPIOInits(); 	// setup the gpio pins for spi communication
@@ -83,18 +90,12 @@ int main (void ){
 
 	SD_init();
 
-	 // read block of data , data at block 0
-	 readBlockSingle(0x00000000) ;
+    fsfat32_t fsfat32 ;
+	fsfat32_Init(&fsfat32, SD_BUFFER ) ;
 
-	 // write block of data , data at block 0
-	 writeBlockSingle(0x00000000 , 0x7F) ;
+	readFile(&fsfat32, SD_BUFFER, "DEV(1).TXT", 1)  ;
 
-	 // read block of data , data at block 0
-	 readBlockSingle(0x00000000) ;
-
-
-	//close the communication by disabling the peripherals
-
+	getFileData(&fsfat32, SD_BUFFER, DATA_PROCESSOR_DEFAULT, FULL_FILE_SIZE) ;
 
 	while(1);
 

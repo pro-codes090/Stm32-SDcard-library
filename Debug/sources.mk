@@ -23,4 +23,5 @@ SUBDIRS := \
 Src \
 Startup \
 drivers/Src \
+fsfat32/Src \
 
