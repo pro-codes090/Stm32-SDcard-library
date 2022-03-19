@@ -7,6 +7,8 @@ The hardware requirements are :
 - SDcard module ([this module ](https://drive.google.com/file/d/1OMjvtsqhbnj-Lv0XjT_rjlsX-I8Km_mr/view?usp=sharing) have been used )
 - A SDcard of any capacity you have 
 
+A Short Demonstartion video using this pproject can be found [here](https://www.linkedin.com/posts/prov_stm32-stm32-embeddedsystems-activity-6909274547401740288-irK4?utm_source=linkedin_share&utm_medium=member_desktop_web)
+
 ## Project file structure 
 
 **Src** :   The Src folder contains the main application file ( main.c )  .  The user might change the contents of the file if needed . The folder contains example code each example with its own source file . 
